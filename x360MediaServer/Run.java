@@ -21,8 +21,9 @@
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import net.sourceforge.x360mediaserve.newServlet.MediaServer;
-import net.sourceforge.x360mediaserve.service.Service;
+import x360mediaserver.newServlet.MediaServer;
+import x360mediaserver.service.Service;
+
 
 /** Class to run server
  * @author Tom
