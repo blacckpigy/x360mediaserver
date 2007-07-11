@@ -1,0 +1,15 @@
+<Configuration>
+	<UDN>uuid:492a4242-22c2-25b1-a112-000001908234</UDN>
+	<friendlyName>x360MediaServer</friendlyName>
+	<PCMOutput>1</PCMOutput>
+	<ExternalAddress>192.168.55.40</ExternalAddress>
+	<Port>7000</Port>
+	<Streams>
+		<Stream>
+			<Name>di.fm - House</Name>
+			<URL>http://scfire-nyk0l-2.stream.aol.com:80/stream/1007</URL>
+			<Type>0</Type>
+		</Stream>
+	</Streams>
+	<MusicDir>D:\_MP3&apos;s\__Mix&apos;s\Bolero Mix</MusicDir>
+</Configuration>

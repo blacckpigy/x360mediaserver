@@ -1,0 +1,2 @@
+#!/bin/bash
+/System/Library/Frameworks/JavaVM.framework/Versions/1.5/Commands/java -cp x360mediaserve.jar:clink170.jar:cmgatejava120.jar:commons-logging.jar:entagged-audioformats-0.15.jar:javax.servlet.jar:org.mortbay.jetty.jar:xercesImpl.jar:xml-apis.jar Run
