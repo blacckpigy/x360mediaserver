@@ -21,14 +21,14 @@ public class Config extends ConfigXML
 
     private static final int             DEFAULT_PORT         = 7000;
 
-    private static final String          STREAMS              = "Streams";
-    private static final String          ITUNES_FILE          = "iTunesFile";
-    private static final String          MUSIC_DIR            = "MusicDir";
-    private static final String          PCMOUTPUT            = "PCMOutput";
+    private static final String          FRIENDLY_NAME        = "friendlyName";
     private static final String          ADDRESS              = "ExternalAddress";
     private static final String          PORT                 = "Port";
+    private static final String          PCMOUTPUT            = "PCMOutput";
+    private static final String          MUSIC_DIR            = "MusicDir";
+    private static final String          ITUNES_FILE          = "iTunesFile";
+    private static final String          STREAMS              = "Streams";
     private static final String          STRING_UDN           = "UDN";
-    private static final String          FRIENDLY_NAME        = "friendlyName";
 
     public static String                 contentDirectoryPath = "/service/ContentDirectory";
     public static ContentDirectory       contentDirectory     = new ContentDirectory();
@@ -51,7 +51,7 @@ public class Config extends ConfigXML
     public static void resetConfig()
     {
         setUDN(UPnP.createUUID());
-        setFriendlyName("x360MediaServer");
+        setFriendlyName("x360 MediaServer");
         setPCMoption(false);
         resetExternalAddress();
         setPort(DEFAULT_PORT);
@@ -174,7 +174,7 @@ public class Config extends ConfigXML
      * 
      * @return
      */
-    public static int getPort()
+    public static Integer getPort()
     {
         int value = DEFAULT_PORT;
         try
@@ -204,7 +204,7 @@ public class Config extends ConfigXML
      * 
      * @return
      */
-    public static int getPCMoption()
+    public static Integer getPCMoption()
     {
         int value = 0;
         try
