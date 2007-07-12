@@ -18,6 +18,7 @@
  */
 
 
+import java.net.BindException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -38,22 +39,34 @@ public class Run {
 		"under certain conditions; see license for details.\n");
 
 
-		System.out.println("OS Detected:"+System.getProperty("os.name"));
+		System.out.println("OS Detected:" + System.getProperty("os.name"));
 
-		MediaServer mediaServer;
-		if(args.length>0){										
-			// if we are given an address then use it
-			try{
-			    mediaServer=new MediaServer(InetAddress.getByName(args[0]).getHostAddress());
-			}
-			catch(UnknownHostException e)
-			{
-				System.out.println("Address supplied not valid");
-			}
-		}
-		else{ 
-			// use first interface as address								
-		    mediaServer=new MediaServer();
-		}
-	}
+        MediaServer mediaServer;
+        if (args.length > 0)
+        {
+            // if we are given an address then use it
+            try
+            {
+                mediaServer = new MediaServer(InetAddress.getByName(args[0]).getHostAddress());
+            }
+            catch (BindException e)
+            {
+            }
+            catch (UnknownHostException e)
+            {
+                System.out.println("Address supplied not valid");
+            }
+        }
+        else
+        {
+            try
+            {
+                // use first interface as address
+                mediaServer = new MediaServer();
+            }
+            catch (BindException e)
+            {
+            }
+        }
+    }
 }
