@@ -196,6 +196,7 @@ public class TrayIcon implements ITrayIcon
             public void handleEvent(Event event)
             {
                 display.dispose();
+                shell.dispose();
                 System.exit(0);
             }
         });

@@ -1,11 +1,11 @@
 package x360mediaserver.newServlet;
 
-import java.net.BindException;
-
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.bio.SocketConnector;
 import org.mortbay.jetty.servlet.Context;
 import org.mortbay.jetty.servlet.ServletHolder;
+
+import x360mediaserver.Config;
 
 /** Class to handle http stuff
  * @author Tom
@@ -22,30 +22,36 @@ public class WebServer {
 	
 	
 	public WebServer(MediaServer mediaServer)
-	{
-		server= new Server();
-		this.mediaServer=mediaServer;
-		ServletHolder holder=new ServletHolder(mediaServer);
-		context= new Context();
-		context.setContextPath("/");
-		context.addServlet(holder, "/*");
-		server.addHandler(context);
-	}
+    {
+        server = new Server();
+        this.mediaServer = mediaServer;
+        ServletHolder holder = new ServletHolder(mediaServer);
+        context = new Context();
+        context.setContextPath("/");
+        context.addServlet(holder, "/*");
+        server.addHandler(context);
+    }
 	
-	public void start(){
-			System.out.println("Starting Server");
-				try
-                {
-                    server.start();
-                }
-                catch (Exception e)
-                {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-	}
-	
-	public void stop(){
+	public void start()
+    {
+        System.out.println("Starting Server");
+// while (true) {
+        try
+        {
+            server.start();
+// break;
+        }
+        catch (Exception e)
+        {
+            Config.out("Crashing Server");
+            mediaServer.getUpnpResponder().stop();
+            // TODO: Have the server (when they crash) popup a warning, then auto-open the config window.
+        }
+// }
+    }
+
+    public void stop()
+    {
 		try{
 			server.stop();
 		}

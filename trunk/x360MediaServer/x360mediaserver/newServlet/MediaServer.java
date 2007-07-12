@@ -12,6 +12,7 @@
 package x360mediaserver.newServlet;
 
 import java.io.PrintWriter;
+import java.net.BindException;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -33,11 +34,10 @@ public class MediaServer extends HttpServlet
 {
     // TODO maybe move servlet functionality into a smaller class to simplify things
 
-    WebServer                       webserver;
+    private WebServer                       webserver;
+    private UPNPResponder                   upnpResponder;
 
-    UPNPResponder                   upnpResponder;
-
-    public MediaServer()
+    public MediaServer() throws BindException
     {
         super();
         System.out.println("Starting media server servlet");
@@ -45,7 +45,7 @@ public class MediaServer extends HttpServlet
     }
 
     
-    public MediaServer(String externalAddress)
+    public MediaServer(String externalAddress) throws BindException
     {
         super();
 
@@ -55,7 +55,7 @@ public class MediaServer extends HttpServlet
     }
 
     
-    public MediaServer(String externalAddress, int port)
+    public MediaServer(String externalAddress, int port) throws BindException
     {
         super();
 
@@ -67,7 +67,7 @@ public class MediaServer extends HttpServlet
         setup();
     }
     
-    public void setup()
+    public void setup() throws BindException
     {
         setupUPNPServer();
         setupWebServer();
@@ -91,7 +91,7 @@ public class MediaServer extends HttpServlet
         }
     }
 
-    private void setupWebServer()
+    private void setupWebServer() throws BindException
     {
         webserver = new WebServer(this);
         int port = Config.getPort();
@@ -176,6 +176,16 @@ public class MediaServer extends HttpServlet
     private void debug(String str)
     {
         System.err.println(str);
+    }
+    
+    public UPNPResponder getUpnpResponder()
+    {
+        return upnpResponder;
+    }
+    
+    public WebServer getWebserver()
+    {
+        return webserver;
     }
     
     
