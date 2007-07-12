@@ -28,17 +28,19 @@ public class AddressEntryWindow
 
     private Text                nicAddressText, nicPortText;
     private Toaster             parent;
+    private Text friendlyNameText;
 
     public AddressEntryWindow(Shell shell)
     {
         Display display = shell.getDisplay();
-        parent = new Toaster(shell, ADDRESS_CHANGE_WINDOW, 300, 280);
+        parent = new Toaster(shell, new ToasterOptions(ADDRESS_CHANGE_WINDOW));
         
         Color white = display.getSystemColor(SWT.COLOR_WHITE);
         
         FillLayout fillLayout = new FillLayout();
         fillLayout.type = SWT.VERTICAL;
         parent.setLayout(fillLayout);
+        
         /*
          * TOP area.
          */
@@ -54,11 +56,34 @@ public class AddressEntryWindow
         topLabel.setText(SETUP_NETWORK_ADDRESS);
 
         Label spacer;
+        
         // Add spacer
         spacer = new Label(top, SWT.NONE);
         spacer.setBackground(white);
         spacer.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
+        // What do I want?
+        // name
+        // address : port
+        // PCMOutput
+        // MusicDir
+        // iTunesFile
+        // Streams
+        
+        Composite nameGrid = makeCompositeSection(white, top, 2);
+        
+        Label friendlyNameLabel = new Label(nameGrid, SWT.NONE);
+        friendlyNameLabel.setText("Name : ");
+        friendlyNameLabel.setBackground(white);
+        friendlyNameLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+        
+        friendlyNameText = new Text(nameGrid, SWT.BORDER);
+        friendlyNameText.setText(Config.getFriendlyName());
+        friendlyNameText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        
+        
+        
+        
         Label nicAddressLabel = new Label(top, SWT.NONE);
         nicAddressLabel.setText(COMPUTERS_NAME_OR_IP_ADDRESS);
         nicAddressLabel.setBackground(white);
@@ -68,11 +93,7 @@ public class AddressEntryWindow
         /*
          * SETUP THE ADDY:PORT GRID
          */
-        Composite addyPortGrid = new Composite(top, SWT.NONE);
-        layout = new GridLayout(4, false);
-        addyPortGrid.setLayout(layout);
-        addyPortGrid.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        addyPortGrid.setBackground(white);
+        Composite addyPortGrid = makeCompositeSection(white, top, 4);
         
         
         nicAddressText = new Text(addyPortGrid, SWT.BORDER);
@@ -80,12 +101,12 @@ public class AddressEntryWindow
         nicAddressText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
 
         Label nicPortLabel = new Label(addyPortGrid, SWT.NONE);
-        nicPortLabel.setText(":"); //$NON-NLS-1$
+        nicPortLabel.setText(":");
         nicPortLabel.setBackground(white);
         nicPortLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
 
         nicPortText = new Text(addyPortGrid, SWT.BORDER);
-//        nicPortText.setText(Config.getString(Config.PORT));
+        nicPortText.setText(Config.getPort().toString());
         nicPortText.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
         // Only allow digits here...
         nicPortText.addListener (SWT.Verify, new Listener () {
@@ -105,11 +126,7 @@ public class AddressEntryWindow
         /*
          * SETUP THE BUTTON GRID
          */
-        Composite buttonGrid = new Composite(top, SWT.NONE);
-        layout = new GridLayout(5, false);
-        buttonGrid.setLayout(layout);
-        buttonGrid.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, false));
-        buttonGrid.setBackground(white);
+        Composite buttonGrid = makeCompositeSection(white, top, 5);
 
         Button acceptButton = new Button(buttonGrid, SWT.PUSH);
         acceptButton.setText(ACCEPT);
@@ -119,7 +136,7 @@ public class AddressEntryWindow
             public void widgetSelected(SelectionEvent e)
             {
                 Config.setAddress(nicAddressText.getText());
-//                Config.put(Config.PORT, nicPortText.getText());
+                Config.setPort(Integer.parseInt(nicPortText.getText()));
                 parent.close();
             }
         });
@@ -136,5 +153,24 @@ public class AddressEntryWindow
         });
        
         parent.open();
+    }
+
+    /**
+     * Creates a section composite.
+     * @param white
+     * @param composite
+     * @param gridNum
+     * @return
+     */
+    private Composite makeCompositeSection(Color white, Composite composite, int gridNum)
+    {
+        Composite addyPortGrid = new Composite(composite, SWT.NONE);
+        GridLayout layout = new GridLayout(gridNum, false);
+        layout.marginWidth = 0;
+        addyPortGrid.setLayout(layout);
+        addyPortGrid.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        addyPortGrid.setBackground(white);
+        
+        return addyPortGrid;
     }
 }

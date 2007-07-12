@@ -4,8 +4,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.events.ShellEvent;
-import org.eclipse.swt.events.ShellListener;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Decorations;
@@ -19,18 +17,13 @@ public class Toaster extends Shell
     private Display display;
     private boolean blockExecutionOnOpen = true;
 
-    public Toaster(Shell shell, String title, int width, int height)
-    {
-        this(shell, title, width, height, true);
-    }
-
-    public Toaster(Shell shell, String title, int width, int height, boolean blockExecutionOnOpen)
+    public Toaster(Shell shell, ToasterOptions options)
     {
         super(shell, SWT.APPLICATION_MODAL | SWT.ON_TOP);
-        setText(title);
-        setSize(width, height);
+        setText(options.title);
+        setSize(options.width, options.height);
 
-        this.blockExecutionOnOpen = blockExecutionOnOpen;
+        this.blockExecutionOnOpen = options.blockExecutionOnOpen;
 
         display = shell.getDisplay();
 
@@ -107,13 +100,9 @@ public class Toaster extends Shell
         // this will wait until we make a decision until passing control back to the thing that
         // created this window..
         if (blockExecutionOnOpen)
-        {
             while ( !isDisposed())
-            {
                 if ( !display.readAndDispatch())
                     display.sleep();
-            }
-        }
     }
 
     /**
