@@ -75,19 +75,22 @@ public class ConfigXML
     /**
      * single location to handle the node creation/setting and the config saving.
      * 
+     * @param nodeValue
      * @param nodeName
-     * @param nodeType
      */
-    protected static void setupNode(String nodeName, String nodeType)
+    protected static void setupNode(String nodeValue, String nodeName)
     {
-        Node node = configNode.getNode(nodeType);
+        Node node = configNode.getNode(nodeName);
         if (node == null)
         {
-            node = new Node(nodeType);
+            node = new Node(nodeName);
             configNode.addNode(node);
         }
-        node.setValue(nodeName);
-        saveConfig();
+        if (!node.getValue().equals(nodeValue))
+        {
+            node.setValue(nodeValue);
+            saveConfig();
+        }
     }
 
     /**
