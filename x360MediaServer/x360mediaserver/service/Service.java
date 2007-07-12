@@ -1,5 +1,6 @@
 package x360mediaserver.service;
 
+import java.net.BindException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -10,6 +11,8 @@ import org.eclipse.swt.widgets.MenuItem;
 
 import x360mediaserver.Config;
 import x360mediaserver.newServlet.MediaServer;
+import x360mediaserver.service.AddressEntryWindow;
+import x360mediaserver.service.TrayIcon;
 
 /**
  * This class is the GUI front end to the x360MediaServe application.
@@ -19,11 +22,19 @@ import x360mediaserver.newServlet.MediaServer;
 public class Service extends TrayIcon
 {
     private static final String DEFAULT_TRAY_NAME = "x360 MediaServe";
+    private MediaServer mediaServer;
     
-    public static void main(String[] args)
+    public static void main(String...args)
     {
         Config.loadConfig();
-        new MediaServer();
+        // TODO: Start the webserver automatically, so we can do the config thing remotely. (once the "tray icon" starts..
+//        try
+//        {
+//            mediaServer = new MediaServer();
+//        }
+//        catch (BindException e)
+//        { 
+//        }
         new Service();
     }
 
@@ -41,16 +52,27 @@ public class Service extends TrayIcon
 
     
 
-    public void StartMediaServer()
-    {
-        MediaServer mediaServer = new MediaServer();
-    }
-
-    public void StartMediaServer(String addy)
+    public void start()
     {
         try
         {
-            MediaServer mediaServer = new MediaServer(InetAddress.getByName(addy).getHostAddress());
+            mediaServer = new MediaServer();
+        }
+        catch (BindException e)
+        {
+            System.out.println("Address supplied not valid");
+        }
+    }
+
+    public void start(String addy)
+    {
+        try
+        {
+            mediaServer = new MediaServer(InetAddress.getByName(addy).getHostAddress());
+        }
+        catch (BindException e)
+        {
+            System.out.println("Address supplied not valid");
         }
         catch (UnknownHostException e)
         {
@@ -58,6 +80,21 @@ public class Service extends TrayIcon
         }
     }
 
+    /**
+     * Stops the media server by properly closing the UPNP and web servers
+     */
+    public void stop()
+    {
+        if (mediaServer == null)
+            return;
+        
+        if (mediaServer.getUpnpResponder() != null)
+            mediaServer.getUpnpResponder().stop();
+        
+        if (mediaServer.getWebserver() != null)
+            mediaServer.getWebserver().stop();
+    }
+    
     public void setupMenu()
     {
         MenuItem menuItem = new MenuItem(getMenu(), SWT.PUSH);
@@ -66,7 +103,7 @@ public class Service extends TrayIcon
         {
             public void handleEvent(Event e)
             {
-                StartMediaServer();
+                start();
                 getTray().setImage(getRunningIcon());
             }
         });
@@ -95,7 +132,26 @@ public class Service extends TrayIcon
 //                    StartMediaServer(address);
             }
         });
-        super.setupMenu();
+        
+        
+        
+        menuItem = new MenuItem(getMenu(), SWT.SEPARATOR);
+
+        menuItem = new MenuItem(getMenu(), SWT.PUSH);
+        menuItem.setText("Quit");
+        menuItem.addListener(SWT.Selection, new Listener()
+        {
+            public void handleEvent(Event e)
+            {
+                if (mediaServer != null)
+                {
+                    stop();
+                }
+                getDisplay().dispose();
+                getShell().dispose();
+                System.exit(0);
+            }
+        });
 
 //        menuItem = new MenuItem(getMenu(), SWT.PUSH);
 //        menuItem.setText("Show Tooltip");

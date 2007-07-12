@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import org.cybergarage.net.HostInterface;
 import org.cybergarage.upnp.UPnP;
 import org.cybergarage.xml.Node;
+import org.eclipse.swt.widgets.Shell;
 
 import x360mediaserver.upnpmediaserver.mediareceiverregistrar.MediaReceiverRegistrar;
 import x360mediaserver.upnpmediaserver.upnp.contentdirectory.ContentDirectory;
@@ -17,6 +18,10 @@ import x360mediaserver.upnpmediaserver.upnp.contentdirectory.ContentDirectory;
  */
 public class Config extends ConfigXML
 {
+    private static final String DIR = "Dir";
+
+    private static final String STREAM = "Stream";
+
     private static final long            serialVersionUID     = 1L;
 
     private static final int             DEFAULT_PORT         = 7000;
@@ -65,12 +70,14 @@ public class Config extends ConfigXML
         getDescriptionNode().getNode("device").setNode(STRING_UDN, getUDN());
         getDescriptionNode().getNode("device").setNode(FRIENDLY_NAME,
                                                        getFriendlyName() + ":1: Windows Media Connect");
-        // add the music streams to the music database. 
-        for (ConfigStream streamNode : getStreams())
-            contentDirectory.addStream(streamNode);   
         
-        // TODO: Add the artists to the music database...
-        setMusicDir(getMusicDir());
+        for (String dir : getMusicDirs())
+            verifyAndAddMusicDir(dir);
+        
+        for (ConfigStream stream : getStreams())
+            verifyAndAddStream(stream);
+        
+        // TODO: need to do the "multiple thing" to itunes, just like music and streams.
         setiTunesFile(getiTunesFile());
         
         saveConfig(descriptionFile, getDescriptionNode());
@@ -218,37 +225,6 @@ public class Config extends ConfigXML
     }
 
     /**
-     * This specifies what music directory will be served. 
-     * TODO: need to allow multiple directories to be served?
-     * 
-     * @param musicDir
-     */
-    public static void setMusicDir(String musicDir)
-    {
-        File file = new File(musicDir);
-        if (file.exists() && file.isDirectory())
-        {
-            setupNode(musicDir, MUSIC_DIR);
-            contentDirectory.addMusicDir(file);
-        }
-        else
-        {
-            System.out.print("Music Dir file path wrong:" + file.toString());
-        }
-    }
-
-    /**
-     * Returns the music directory set for the server.
-     * 
-     * @return
-     */
-    public static String getMusicDir()
-    {
-        Node node = configNode.getNode(MUSIC_DIR);
-        return node != null ? node.getValue() : "";
-    }
-
-    /**
      * this will set the iTunes file to be served.
      * 
      * @param iTunesFile
@@ -277,6 +253,97 @@ public class Config extends ConfigXML
         Node node = configNode.getNode(ITUNES_FILE);
         return node != null ? node.getValue() : "";
     }
+    
+    /**
+     * This adds a single music dir to the server.
+     * 
+     * @param name
+     * @param url
+     * @param type
+     */
+    public static void addMusicDir(String musicDir)
+    {
+        File file = new File(musicDir);
+        if (file.exists() && file.isDirectory())
+        {
+            Node musicDirMainNode = configNode.getNode(MUSIC_DIR);
+            if (musicDirMainNode == null)
+            {
+                musicDirMainNode = new Node(MUSIC_DIR);
+                configNode.addNode(musicDirMainNode);
+            }
+            Node singleDirNode = new Node(DIR);
+            singleDirNode.setValue(musicDir);
+            
+            musicDirMainNode.addNode(singleDirNode);
+            
+            verifyAndAddMusicDir(musicDir);
+            saveConfig();
+        }
+        else
+        {
+            System.out.print("Music Dir file path wrong:" + file.toString());
+        }
+    }
+    
+    /**
+     * This verifies and then ADDS the music dir to the server (but not to the XML).
+     * @param musicDir
+     */
+    public static void verifyAndAddMusicDir(String musicDir)
+    {
+        File file = new File(musicDir);
+        if (file.exists() && file.isDirectory())
+        {
+            contentDirectory.addMusicDir(file);
+        }
+        else
+        {
+            System.out.print("Music Dir file path wrong:" + file.toString());
+        }
+    }
+    
+    /**
+     * This removes a music dir from the list of music dirs.
+     * @param musicDir
+     */
+    public static void removeMusicDir(String musicDir)
+    {
+        Node node = configNode.getNode(MUSIC_DIR);
+        for (int j = 0; j < node.getNNodes(); j++ )
+        {
+            Node singleDirNode = node.getNode(j);
+            if (singleDirNode.getValue().equals(musicDir))
+                node.removeNode(singleDirNode);
+        }
+    }
+
+    /**
+     * This removes all of the music directories stored in the XML.
+     */
+    public static void resetMusicDir()
+    {
+        configNode.removeNode(MUSIC_DIR);
+    }
+    
+    /**
+     * This returns the music dir nodes as an arayList.
+     * 
+     * @return ArrayList<ConfigStream>
+     */
+    public static ArrayList<String> getMusicDirs()
+    {
+        ArrayList<String> dirs = new ArrayList<String>(0);
+
+        Node node = configNode.getNode(MUSIC_DIR);
+        for (int j = 0; j < node.getNNodes(); j++ )
+        {
+            String dirsNode = node.getNode(j).getValue();
+            if (dirsNode != null)
+                dirs.add(dirsNode);
+        }
+        return dirs;
+    }
 
     /**
      * This adds music Streams to the server.
@@ -293,7 +360,7 @@ public class Config extends ConfigXML
             streamNodes = new Node(STREAMS);
             configNode.addNode(streamNodes);
         }
-        Node singleStreamNode = new Node("Stream");
+        Node singleStreamNode = new Node(STREAM);
 
         Node nameNode = new Node("Name");
         nameNode.setValue(name);
@@ -309,38 +376,35 @@ public class Config extends ConfigXML
 
         streamNodes.addNode(singleStreamNode);
 
-        contentDirectory.addStream(name, url, type);
+        
+        verifyAndAddStream(new ConfigStream(name, url, type));
         saveConfig();
     }
 
     /**
      * This returns the stream nodes as an arayList.
+     * 
      * @return ArrayList<ConfigStream>
      */
     public static ArrayList<ConfigStream> getStreams()
     {
-        ArrayList<ConfigStream> streams = new ArrayList<ConfigStream>();
+        ArrayList<ConfigStream> streams = new ArrayList<ConfigStream>(0);
 
-        for (int i = 0; i < configNode.getNNodes(); i++ )
+        Node node = configNode.getNode(STREAMS);
+        for (int j = 0; j < node.getNNodes(); j++ )
         {
-            Node node = configNode.getNode(i);
-            if (node.getName().equals(STREAMS))
-                for (int j = 0; j < node.getNNodes(); j++ )
-                {
-                    ConfigStream streamNode = processStreamNode(node.getNode(j));
-                    if (streamNode != null)
-                        streams.add(streamNode);
-                }
+            ConfigStream streamNode = processStreamNode(node.getNode(j));
+            if (streamNode != null)
+                streams.add(streamNode);
         }
         return streams;
     }
-
+    
     /**
-     * Process (parses) a node from a "streams" node and returns it
-     * such as:
-     * <Name>di.fm - House</Name> 
+     * Process (parses) a node from a "streams" node and returns it such as: 
+     * <Name>di.fm - House</Name>
      * <URL>http://scfire-nyk0l-2.stream.aol.com:80/stream/1007</URL> 
-     * <Type>0</Type> 
+     * <Type>0</Type>
      * 
      * @param streamNode
      */
@@ -371,11 +435,44 @@ public class Config extends ConfigXML
         return null;
     }
     
+    /**
+     * This removes all of the streams stored in the XML.
+     */
+    public static void resetStreams()
+    {
+        configNode.removeNode(STREAMS);
+    }
+    
+    /**
+     * This verifies and then ADDS the stream to the server (but not to the XML).
+     * @param musicDir
+     */
+    public static void verifyAndAddStream(ConfigStream stream)
+    {
+        contentDirectory.addStream(stream.name, stream.url, stream.type);    
+    }
+    
+    /**
+     * This removes a stream from the list of all streams.
+     * @param musicDir
+     */
+    public static void removeStream(Node streamsNode)
+    {
+        Node node = configNode.getNode(STREAMS);
+        for (int j = 0; j < node.getNNodes(); j++ )
+        {
+            Node singleStreamNode = node.getNode(j);
+            if (singleStreamNode.getValue() != null)
+                if (singleStreamNode.getNode("URL").getValue() != null)
+                    node.removeNode(singleStreamNode);
+        }
+    }
+    
     public static void out(Object string)
     {
         System.out.println(string.toString());
     }
-    
+
     public static void toaster(Object string)
     {
         System.err.println(string.toString());

@@ -11,5 +11,10 @@
 			<Type>0</Type>
 		</Stream>
 	</Streams>
-	<MusicDir>D:\_MP3&apos;s\__Mix&apos;s\Bolero Mix</MusicDir>
+	<MusicDir>
+		<Dir>D:\_MP3&apos;s\__Mix&apos;s\Bolero Mix</Dir>
+		<Dir>D:\_MP3&apos;s\Christian\Downhere\_Downhere</Dir>
+		<Dir>D:\_MP3&apos;s\Christian\Downhere\_So Much for Substitutes</Dir>
+		<Dir>D:\_MP3&apos;s\Christian\Chris Rice\_Deep Enough to Dream</Dir>
+	</MusicDir>
 </Configuration>

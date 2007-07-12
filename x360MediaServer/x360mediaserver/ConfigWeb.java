@@ -150,7 +150,7 @@ public class ConfigWeb
                     if (file.exists() && file.isDirectory())
                     {
                         // contentdir.addMusicDir(file);
-                        Config.setMusicDir(musicDir);
+                        Config.addMusicDir(musicDir);
                     }
                 }
             }
