@@ -70,7 +70,7 @@ public class Service extends TrayIcon
                 getTray().setImage(getRunningIcon());
             }
         });
-
+        
         menuItem = new MenuItem(getMenu(), SWT.PUSH);
         menuItem.setText("Edit Media Server Address");
         menuItem.addListener(SWT.Selection, new Listener()
@@ -78,10 +78,8 @@ public class Service extends TrayIcon
             public void handleEvent(Event e)
             {
                 AddressEntryWindow addressWindow = new AddressEntryWindow(getShell());
-//                System.out.println("BALRD");
-//                String address = addressWindow.getAddress();
-//                if (address != null && address.length() > 1)
-//                    StartMediaServer(address);
+                // TODO: need a way to send the Config XML to the webserver....
+                // then.. restart the webserver?
             }
         });
         
@@ -91,7 +89,7 @@ public class Service extends TrayIcon
         {
             public void handleEvent(Event e)
             {
-                AddressEntryWindow addressWindow = new AddressEntryWindow(getShell());
+//                AddressEntryWindow addressWindow = new AddressEntryWindow(getShell());
 //                String address = addressWindow.getAddress();
 //                if (address != null && address.length() > 1)
 //                    StartMediaServer(address);

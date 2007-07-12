@@ -5,7 +5,7 @@ import java.util.ResourceBundle;
 
 public class Messages
 {
-    private static final String         BUNDLE_NAME     = "net.sourceforge.x360mediaserve.service.messages"; //$NON-NLS-1$
+    private static final String         BUNDLE_NAME     = "x360mediaserver.service.messages"; //$NON-NLS-1$
 
     private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(BUNDLE_NAME);
 
