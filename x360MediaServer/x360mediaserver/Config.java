@@ -93,7 +93,7 @@ public class Config extends ConfigXML
     {
         setupNode(friendlyName, FRIENDLY_NAME);
         getDescriptionNode().getNode("device").setNode(FRIENDLY_NAME,
-                                                       friendlyName + ":1: Windows Media Connect");
+                                                       friendlyName + ": 1 : Windows Media Connect");
     }
 
     /**

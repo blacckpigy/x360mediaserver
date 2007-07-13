@@ -12,6 +12,8 @@ import org.cybergarage.xml.Node;
 import org.cybergarage.xml.Parser;
 import org.cybergarage.xml.ParserException;
 
+import x360mediaserver.utils.StringUtils;
+
 public class ConfigXML
 {
     public static final String FILES_CONFIG_XML      = "files/config.xml";
@@ -92,7 +94,7 @@ public class ConfigXML
             saveConfig();
         }
     }
-
+    
     /**
      * @return the description Node
      */
