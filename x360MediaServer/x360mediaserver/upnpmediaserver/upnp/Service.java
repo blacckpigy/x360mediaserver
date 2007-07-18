@@ -22,7 +22,6 @@
 
 package x360mediaserver.upnpmediaserver.upnp;
 
-import java.io.File;
 import java.io.OutputStream;
 import java.util.HashMap;
 
@@ -31,13 +30,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.cybergarage.upnp.Action;
 import org.cybergarage.upnp.ActionList;
-import org.cybergarage.upnp.UPnP;
 import org.cybergarage.upnp.control.ActionRequest;
-import org.cybergarage.upnp.device.InvalidDescriptionException;
 import org.cybergarage.xml.Node;
-import org.cybergarage.xml.Parser;
-import org.cybergarage.xml.ParserException;
 
+import x360mediaserver.Config;
 import x360mediaserver.upnpmediaserver.upnp.cybergarage.HTTPServletRequestWrapper;
 import x360mediaserver.upnpmediaserver.upnp.cybergarage.NewActionResponse;
 
@@ -48,8 +44,6 @@ import x360mediaserver.upnpmediaserver.upnp.cybergarage.NewActionResponse;
 public abstract class Service {
 	
 	// Class to handle differend upnp services and actions
-	protected String SCPDString=null;
-	protected boolean SCPDisFile=false;
 	String SERVICE_STRING;
 	
 	protected HashMap<String,Action> actionmap;
@@ -67,40 +61,16 @@ public abstract class Service {
 	
 	protected Node scpdNode=null;
 	
-	public boolean loadSCPD(String scpdStr) throws InvalidDescriptionException
+	public boolean loadSCPD(Node scpdNode)
 	{
-		try {
-			Parser parser = UPnP.getXMLParser();
-			Node scpdNode = parser.parse(scpdStr);
-			if (scpdNode == null)
-				return false;			
-			this.scpdNode=scpdNode;
-			this.buildActionList();
-		}
-		catch (ParserException e) {
-			throw new InvalidDescriptionException(e);
-		}
-		return true;
-	}
-	
-	public boolean loadSCPD(File scpdFile) throws InvalidDescriptionException
-	{
-		try {
-			Parser parser = UPnP.getXMLParser();
-			Node scpdNode = parser.parse(scpdFile);
-			if (scpdNode == null)
-				return false;			
-			this.scpdNode=scpdNode;
-			this.buildActionList();
-		}
-		catch (ParserException e) {
-			throw new InvalidDescriptionException(e);
-		}
+	    this.scpdNode=scpdNode;
+        this.buildActionList();
+        
 		return true;
 	}
 	
 	public Node getSCPDNode(){
-		return scpdNode;
+		return this.scpdNode;
 	}
 	
 	public boolean buildActionList(){
@@ -145,7 +115,8 @@ public abstract class Service {
 	
 	public void doPost(HttpServletRequest req, HttpServletResponse resp){		
 		
-		try{
+		Config.out("DOING THE SOAP ACTION!");
+	    try{
 			if(req.getHeader("SOAPACTION")!=null){ // check it is a upnp action
 				HTTPServletRequestWrapper actionwrapper=new HTTPServletRequestWrapper(req);
 				ActionRequest actrequest=actionwrapper.getActionRequest();
@@ -153,7 +124,7 @@ public abstract class Service {
 				
 				
 				if(doAction(action,req.getLocalAddr()+":"+req.getLocalPort())){
-					resp.setContentType("text/xml; charset=\"utf-8\"");						
+					resp.setContentType("text/xml");						
 					// if the action has been successfully done
 					debug("action done, setting response");
 					NewActionResponse actresponse=new NewActionResponse();
@@ -181,14 +152,14 @@ public abstract class Service {
 	}
 	
 	protected void handleOtherPost(HttpServletRequest req, HttpServletResponse resp){
-		
+	    Config.out("DOING THE POST SOAP ACTION!");
 	}
 	
 	// method to handle actions
 	protected abstract boolean doAction(Action a,String serveraddress);
 	
 	protected void debug(String str){
-	    System.err.println("SERVICE.java : " + str);
+	    System.err.println("abstract SERVICE.java : " + str);
 //		try{
 //			File outputFile = new File("E:\\testlog.txt");
 //			PrintWriter debug = new PrintWriter(new FileWriter(outputFile,true));	

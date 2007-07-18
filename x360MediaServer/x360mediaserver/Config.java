@@ -3,8 +3,11 @@ package x360mediaserver;
 import java.io.File;
 import java.util.ArrayList;
 
+import javax.servlet.http.HttpServlet;
+
 import org.cybergarage.net.HostInterface;
 import org.cybergarage.upnp.UPnP;
+import org.cybergarage.util.Debug;
 import org.cybergarage.xml.Node;
 import org.eclipse.swt.widgets.Shell;
 
@@ -18,6 +21,8 @@ import x360mediaserver.upnpmediaserver.upnp.contentdirectory.ContentDirectory;
  */
 public class Config extends ConfigXML
 {
+    private static final String CONFIG_URL = "configURL";
+
     private static final String DIR = "Dir";
 
     private static final String STREAM = "Stream";
@@ -35,14 +40,6 @@ public class Config extends ConfigXML
     private static final String          STREAMS              = "Streams";
     private static final String          STRING_UDN           = "UDN";
 
-    public static String                 contentDirectoryPath = "/service/ContentDirectory";
-    public static ContentDirectory       contentDirectory     = new ContentDirectory();
-
-    public static String                 mediaRecRegPath      = "/service/MediaReceiverRegistrar";
-    public static MediaReceiverRegistrar mediaReceiverReg     = new MediaReceiverRegistrar();
-    
-    public static String                 configurePath        = "/configure";
-
     public Config()
     {}
 
@@ -51,15 +48,20 @@ public class Config extends ConfigXML
         ConfigXML.loadConfig();
         // TODO: have an option set to use IPV4/6 etc.
         UPnP.setEnable(UPnP.USE_ONLY_IPV4_ADDR);
+        Debug.on();
     }
     
     public static void resetConfig()
     {
-        setUDN(UPnP.createUUID());
+        setUDN(generateUDN());
         setFriendlyName("x360 MediaServer");
         setPCMoption(false);
         resetExternalAddress();
         setPort(DEFAULT_PORT);
+        
+        if (configNode.getNode(CONFIG_URL) == null)
+            setupNode("/config",CONFIG_URL);
+        
     }
 
     /**
@@ -68,8 +70,7 @@ public class Config extends ConfigXML
     public static void verifyDescriptionXML()
     {
         getDescriptionNode().getNode("device").setNode(STRING_UDN, getUDN());
-        getDescriptionNode().getNode("device").setNode(FRIENDLY_NAME,
-                                                       getFriendlyName() + ":1: Windows Media Connect");
+        getDescriptionNode().getNode("device").setNode(FRIENDLY_NAME, getFriendlyName());
         
         for (String dir : getMusicDirs())
             verifyAndAddMusicDir(dir);
@@ -93,7 +94,7 @@ public class Config extends ConfigXML
     {
         setupNode(friendlyName, FRIENDLY_NAME);
         getDescriptionNode().getNode("device").setNode(FRIENDLY_NAME,
-                                                       friendlyName + ": 1 : Windows Media Connect");
+                                                       friendlyName);
     }
 
     /**
@@ -103,7 +104,7 @@ public class Config extends ConfigXML
      */
     public static String getFriendlyName()
     {
-        return configNode.getNode(FRIENDLY_NAME).getValue();
+        return configNode.getNode(FRIENDLY_NAME).getValue() + " : Windows Media Connect";
     }
 
     /**
@@ -124,7 +125,25 @@ public class Config extends ConfigXML
      */
     public static String getUDN()
     {
+        // if one doesn't exist..
+        if (configNode.getNode(STRING_UDN) == null)
+            setupNode(generateUDN(), STRING_UDN);
         return configNode.getNode(STRING_UDN).getValue();
+    }
+    
+    private static String generateUDN()
+    {
+        return "uuid:492a4242-22c2-25b1-a112-00000" +
+               (System.currentTimeMillis() % 1000000 + 1000000);
+    }
+
+    /**
+     * Returns just the UUID value.
+     * @return
+     */
+    public static String getUUID()
+    {
+        return getUDN().replace("uuid:", "");
     }
 
     /**
@@ -203,7 +222,7 @@ public class Config extends ConfigXML
     public static void setPCMoption(boolean option)
     {
         setupNode(option ? "1" : "0", PCMOUTPUT);
-        contentDirectory.setPCMOption(option);
+        getContentDirectory().setPCMOption(option);
     }
 
     /**
@@ -235,7 +254,7 @@ public class Config extends ConfigXML
         if (file.exists() && file.isFile())
         {
             setupNode(iTunesFile, ITUNES_FILE);
-            contentDirectory.addiTunesDB(file);
+            getContentDirectory().addiTunesDB(file);
         }
         else
         {
@@ -295,7 +314,7 @@ public class Config extends ConfigXML
         File file = new File(musicDir);
         if (file.exists() && file.isDirectory())
         {
-            contentDirectory.addMusicDir(file);
+            getContentDirectory().addMusicDir(file);
         }
         else
         {
@@ -449,7 +468,7 @@ public class Config extends ConfigXML
      */
     public static void verifyAndAddStream(ConfigStream stream)
     {
-        contentDirectory.addStream(stream.name, stream.url, stream.type);    
+        getContentDirectory().addStream(stream.name, stream.url, stream.type);    
     }
     
     /**
@@ -470,11 +489,50 @@ public class Config extends ConfigXML
     
     public static void out(Object string)
     {
-        System.out.println(string.toString());
+        System.err.println(string.toString());
     }
 
     public static void toaster(Object string)
     {
         System.err.println(string.toString());
+    }
+
+    /**
+     * @return the contentDirectory
+     */
+    public static ContentDirectory getContentDirectory()
+    {
+        return ConfigXML.getContentDirectory();
+    }
+    
+    
+    public static MediaReceiverRegistrar getMediaReceiverReg()
+    {
+        return ConfigXML.getMediaReceiverReg();
+    }
+    
+    
+    public static String getUrl(String name)
+    {
+        //if it's the configuration
+        if (name.equals("config"))
+            return configNode.getNode(CONFIG_URL).getValue();
+        
+        Node node;
+        //if it's the device itself...
+        node = getDescriptionNode().getNode("device");
+        if (node.getNode("deviceType").getValue().contains(name))
+            return node.getNode("deviceURL").getValue();
+
+        // if it's a service...
+        node = getDescriptionNode().getNode("device").getNode("serviceList");
+        for (int j = 0; j < node.getNNodes(); j++ )
+        {
+            Node serviceNode = node.getNode(j);
+            if (serviceNode.getNode("serviceId").getValue().contains(name))
+                return serviceNode.getNode("SCPDURL").getValue();
+        }
+        
+        return "IVALID SERVICE.xml";
     }
 }

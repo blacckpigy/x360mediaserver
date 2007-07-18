@@ -1,5 +1,4 @@
 <Configuration>
-	<UDN>uuid:492a4242-22c2-25b1-a112-000001908234</UDN>
 	<friendlyName>x360MediaServer</friendlyName>
 	<PCMOutput>1</PCMOutput>
 	<ExternalAddress>192.168.55.40</ExternalAddress>
@@ -12,9 +11,8 @@
 		</Stream>
 	</Streams>
 	<MusicDir>
-		<Dir>D:\_MP3&apos;s\__Mix&apos;s\Bolero Mix</Dir>
 		<Dir>D:\_MP3&apos;s\Christian\Downhere\_Downhere</Dir>
-		<Dir>D:\_MP3&apos;s\Christian\Downhere\_So Much for Substitutes</Dir>
-		<Dir>D:\_MP3&apos;s\Christian\Chris Rice\_Deep Enough to Dream</Dir>
 	</MusicDir>
+	<configURL>/config</configURL>
+	<UDN>uuid:492a4242-22c2-25b1-a112-000001078953</UDN>
 </Configuration>

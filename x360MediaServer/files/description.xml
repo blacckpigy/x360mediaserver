@@ -5,37 +5,37 @@
 	</specVersion>
 	<device>
 		<deviceType>urn:schemas-upnp-org:device:MediaServer:1</deviceType>
-		<manufacturer>Tawsi</manufacturer>
-		<manufacturerURL>http://x360mediaserve.sf.net/</manufacturerURL>
+		<deviceURL>/description.xml</deviceURL>
+		<manufacturer>Microsoft</manufacturer>
+		<manufacturerURL>http://www.microsoft.com/</manufacturerURL>
 		<modelName>Windows Media Connect</modelName>
 		<modelNumber>2.0</modelNumber>
-		<modelURL>http://x360mediaserve.sf.net</modelURL>
-		<serialNumber>{1}</serialNumber>
+		<modelURL>http://www.microsoft.com/</modelURL>
 		<serviceList>
 			<service>
 				<serviceType>urn:schemas-upnp-org:service:ConnectionManager:1</serviceType>
 				<serviceId>urn:upnp-org:serviceId:urn:schemas-upnp-org:service:ConnectionManager</serviceId>
-				<SCPDURL>/service/ConnectionManager/ConnectionManager1.xml</SCPDURL>
+				<SCPDURL>/service/ConnectionManager/ConnectionManager.xml</SCPDURL>
 				<controlURL>/service/ConnectionManager/Control</controlURL>
 				<eventSubURL>/service/ConnectionManager/Event</eventSubURL>
 			</service>
 			<service>
 				<serviceType>urn:schemas-upnp-org:service:ContentDirectory:1</serviceType>
 				<serviceId>urn:upnp-org:serviceId:urn:schemas-upnp-org:service:ContentDirectory</serviceId>
-				<SCPDURL>/service/ContentDirectory/ContentDirectory1.xml</SCPDURL>
+				<SCPDURL>/service/ContentDirectory/ContentDirectory.xml</SCPDURL>
 				<controlURL>/service/ContentDirectory/Control</controlURL>
 				<eventSubURL>/service/ContentDirectory/Event</eventSubURL>
 			</service>
 			<service>
 				<serviceType>urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1</serviceType>
 				<serviceId>urn:microsoft.com:serviceId:X_MS_MediaReceiverRegistrar</serviceId>
-				<SCPDURL>/service/MediaReceiverRegistrar/MediaReceiverRegistrar1.xml</SCPDURL>
+				<SCPDURL>/service/MediaReceiverRegistrar/MediaReceiverRegistrar.xml</SCPDURL>
 				<eventSubURL>/service/MediaReceiverRegistrar/Event</eventSubURL>
 				<controlURL>/service/MediaReceiverRegistrar/Control</controlURL>
 			</service>
 		</serviceList>
-		<UDN>uuid:492a4242-22c2-25b1-a112-000001908234</UDN>
-		<friendlyName>x360MediaServer:1: Windows Media Connect</friendlyName>
+		<UDN>uuid:492a4242-22c2-25b1-a112-000001078953</UDN>
+		<friendlyName>x360MediaServer : Windows Media Connect</friendlyName>
 		<MusicDir>D:\_MP3&apos;s\__Mix&apos;s\Bolero Mix</MusicDir>
 		<iTunesFile />
 	</device>

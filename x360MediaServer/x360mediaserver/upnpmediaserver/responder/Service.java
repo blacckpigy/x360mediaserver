@@ -79,7 +79,6 @@ import org.cybergarage.upnp.StateVariable;
 import org.cybergarage.upnp.UPnP;
 import org.cybergarage.upnp.control.ActionListener;
 import org.cybergarage.upnp.control.QueryListener;
-import org.cybergarage.upnp.device.InvalidDescriptionException;
 import org.cybergarage.upnp.device.NTS;
 import org.cybergarage.upnp.device.ST;
 import org.cybergarage.upnp.event.NotifyRequest;
@@ -89,8 +88,6 @@ import org.cybergarage.upnp.ssdp.SSDPNotifyRequest;
 import org.cybergarage.upnp.ssdp.SSDPNotifySocket;
 import org.cybergarage.upnp.ssdp.SSDPPacket;
 import org.cybergarage.upnp.xml.ServiceData;
-import org.cybergarage.util.Debug;
-import org.cybergarage.util.Mutex;
 import org.cybergarage.util.StringUtil;
 import org.cybergarage.xml.Node;
 import org.cybergarage.xml.Parser;
@@ -126,22 +123,6 @@ public class Service
 		serviceNode = node;
 	}
 
-	////////////////////////////////////////////////
-	// Mutex
-	////////////////////////////////////////////////
-	
-	private Mutex mutex = new Mutex();
-	
-	public void lock()
-	{
-		mutex.lock();
-	}
-	
-	public void unlock()
-	{
-		mutex.unlock();
-	}
-	
 	////////////////////////////////////////////////
 	//	isServiceNode
 	////////////////////////////////////////////////
@@ -197,7 +178,7 @@ public class Service
 	{
 		return getServiceNode().getNodeValue(SERVICE_TYPE);
 	}
-
+	
 	////////////////////////////////////////////////
 	//	serviceID
 	////////////////////////////////////////////////
@@ -300,94 +281,62 @@ public class Service
 	//	SCPD node
 	////////////////////////////////////////////////
 
-	public boolean loadSCPD(String scpdStr) throws InvalidDescriptionException
-	{
-		try {
-			Parser parser = UPnP.getXMLParser();
-			Node scpdNode = parser.parse(scpdStr);
-			if (scpdNode == null)
-				return false;
-			ServiceData data = getServiceData();
-			data.setSCPDNode(scpdNode);
-		}
-		catch (ParserException e) {
-			throw new InvalidDescriptionException(e);
-		}
-		return true;
-	}
+	// robinson
+	public boolean loadSCPD(Node scpdNode)
+    {
+        ServiceData data = getServiceData();
+        data.setSCPDNode(scpdNode);
+        
+        return true;
+    }
 
-	public boolean loadSCPD(File file) throws ParserException
-	{
-		Parser parser = UPnP.getXMLParser();
-		Node scpdNode = parser.parse(file);
-		if (scpdNode == null)
-			return false;
-		ServiceData data = getServiceData();
-		data.setSCPDNode(scpdNode);
-		return true;
-	}
+//    public boolean loadSCPD(String scpdStr) throws InvalidDescriptionException
+//    {
+//        try
+//        {
+//			Parser parser = UPnP.getXMLParser();
+//			Node scpdNode = parser.parse(scpdStr);
+//			if (scpdNode == null)
+//				return false;
+//			ServiceData data = getServiceData();
+//			data.setSCPDNode(scpdNode);
+//		}
+//		catch (ParserException e) {
+//			throw new InvalidDescriptionException(e);
+//		}
+//		return true;
+//	}
+//
+//	public boolean loadSCPD(File file) throws ParserException
+//	{
+//		Parser parser = UPnP.getXMLParser();
+//		Node scpdNode = parser.parse(file);
+//		if (scpdNode == null)
+//			return false;
+//		ServiceData data = getServiceData();
+//		data.setSCPDNode(scpdNode);
+//		return true;
+//	}
 	
-	private Node getSCPDNode(URL scpdUrl) throws ParserException
-	{
-		Parser parser = UPnP.getXMLParser();
-		return parser.parse(scpdUrl);
-	}
 	
-	private Node getSCPDNode(File scpdFile) throws ParserException
-	{
-		Parser parser = UPnP.getXMLParser();
-		return parser.parse(scpdFile);
-	}
+	
+//	private Node getSCPDNode(URL scpdUrl) throws ParserException
+//	{
+//		Parser parser = UPnP.getXMLParser();
+//		return parser.parse(scpdUrl);
+//	}
+	
+//	private Node getSCPDNode(File scpdFile) throws ParserException
+//	{
+//		Parser parser = UPnP.getXMLParser();
+//		return parser.parse(scpdFile);
+//	}
 
 	private Node getSCPDNode()
 	{
 	    Config.out("trying to get SCPD Node");
-		Node serviceNode = getServiceNode();
 		ServiceData data = getServiceData();
 		Node scpdNode = data.getSCPDNode();
-		if (scpdNode != null)
-			return scpdNode;
-		
-		String scpdURLStr = getSCPDURL();
-		try {
-			URL scpdUrl = new URL(scpdURLStr);
-			scpdNode = getSCPDNode(scpdUrl);
-		}
-		catch (Exception e1) {
-			UPNPListener rootDev = getRootDevice();
-			String urlBaseStr = rootDev.getURLBase();
-			// Thanks for Steven Yen (2003/09/03)
-			if (urlBaseStr == null || urlBaseStr.length() <= 0) {
-				String location = rootDev.getLocation();
-				String locationHost = HTTP.getHost(location);
-				int locationPort = HTTP.getPort(location);
-				urlBaseStr = HTTP.getRequestHostURL(locationHost, locationPort);
-			}
-			scpdURLStr = HTTP.toRelativeURL(scpdURLStr);
-			String newScpdURLStr = urlBaseStr + scpdURLStr;
-			try {
-				URL newScpdURL = new URL(newScpdURLStr);
-				scpdNode = getSCPDNode(newScpdURL);
-			}
-			catch (Exception e2) {
-				newScpdURLStr = HTTP.getAbsoluteURL(urlBaseStr, scpdURLStr);
-				try {
-					URL newScpdURL = new URL(newScpdURLStr);
-					scpdNode = getSCPDNode(newScpdURL);
-				}
-				catch (Exception e3) {
-					newScpdURLStr = rootDev.getDescriptionFilePath() + scpdURLStr;
-					try {
-						scpdNode = getSCPDNode(new File(newScpdURLStr));
-					}
-					catch (Exception e4) {
-						Debug.warning(e4);
-					}
-				}
-			}
-		}
-
-		data.setSCPDNode(scpdNode);
 		
 		return scpdNode;
 	}
@@ -532,12 +481,13 @@ public class Service
 	{
 		return getDevice().getUDN() + "::" + getServiceType();
 	}
-		
+	
 	public void announce(String bindAddr)
 	{
 	    Config.out("Doing announce on :" + bindAddr);
 		// uuid:device-UUID::urn:schemas-upnp-org:service:serviceType:v 
 		UPNPListener rootDev = getRootDevice();
+//		String devLocation = rootDev.getLocationURL(bindAddr, getSCPDURL());
 		String devLocation = rootDev.getLocationURL(bindAddr);
 		String serviceNT = getNotifyServiceTypeNT();			
 		String serviceUSN = getNotifyServiceTypeUSN();
@@ -559,7 +509,8 @@ public class Service
 
 	public void byebye(String bindAddr)
 	{
-		// uuid:device-UUID::urn:schemas-upnp-org:service:serviceType:v 
+	    Config.out("Doing byebye on :" + bindAddr);
+	    // uuid:device-UUID::urn:schemas-upnp-org:service:serviceType:v 
 		
 		String devNT = getNotifyServiceTypeNT();			
 		String devUSN = getNotifyServiceTypeUSN();
@@ -577,7 +528,6 @@ public class Service
 	public boolean serviceSearchResponse(SSDPPacket ssdpPacket)
 	{
 	    String ssdpST = ssdpPacket.getST();
-	    Config.out("Doing Service: " + ssdpST);
 
 		if (ssdpST == null)
 			return false;

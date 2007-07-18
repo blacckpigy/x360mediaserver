@@ -149,7 +149,7 @@ public class UPNPListener extends UPnP implements org.cybergarage.http.HTTPReque
 	public final static String UPNP_ROOTDEVICE = "upnp:rootdevice";
 
 	public final static int DEFAULT_STARTUP_WAIT_TIME = 1000;
-	public final static int DEFAULT_DISCOVERY_WAIT_TIME = 300;
+	public final static int DEFAULT_DISCOVERY_WAIT_TIME = 3;
 	public final static int DEFAULT_LEASE_TIME = 30 * 60;
 
 	public final static int HTTP_DEFAULT_PORT = 4004;
@@ -204,15 +204,10 @@ public class UPNPListener extends UPnP implements org.cybergarage.http.HTTPReque
 	{
 		rootNode = root;
 		deviceNode = device;
-		setUUID(UPnP.createUUID());
+		setUUID(Config.getUUID());
 		setWirelessMode(false);
 	}
 
-	public UPNPListener()
-	{
-		this(null, null);
-	}
-	
 	public UPNPListener(Node device)
 	{
 		this(null, device);
@@ -394,13 +389,13 @@ public class UPNPListener extends UPnP implements org.cybergarage.http.HTTPReque
 		return descriptionURI.equals(uri);
 	}
 
-	public String getDescriptionFilePath()
-	{
-		File descriptionFile = getDescriptionFile();
-		if (descriptionFile == null)
-			return "";
-		return descriptionFile.getAbsoluteFile().getParent();
-	}
+//	public String getDescriptionFilePath()
+//	{
+//		File descriptionFile = getDescriptionFile();
+//		if (descriptionFile == null)
+//			return "";
+//		return descriptionFile.getAbsoluteFile().getParent();
+//	}
 
 //    public boolean loadDescription(Node descNode) throws InvalidDescriptionException
 //    {
@@ -466,12 +461,7 @@ public class UPNPListener extends UPnP implements org.cybergarage.http.HTTPReque
 	protected boolean initializeLoadedDescription()
 	{
 		setDescriptionURI(DEFAULT_DESCRIPTION_URI);
-		setLeaseTime(DEFAULT_LEASE_TIME);
-		setHTTPPort(HTTP_DEFAULT_PORT);
-
-		// Thanks for Oliver Newell (03/23/04)
-		if (hasUDN() == false)
-			updateUDN();
+		getDeviceData().setLeaseTime(DEFAULT_LEASE_TIME);
 				
 		return true;
 	}
@@ -1046,6 +1036,12 @@ public class UPNPListener extends UPnP implements org.cybergarage.http.HTTPReque
 		
 	}
 
+	public String getLocationURL(String host, String location)
+    {
+        return HostInterface.getHostURL(host, getHTTPPort(), location);
+        
+    }
+	
 	private String getNotifyDeviceNT()
 	{
 		if (isRootDevice() == false)
@@ -1188,7 +1184,7 @@ public class UPNPListener extends UPnP implements org.cybergarage.http.HTTPReque
 	//tawsi
 	public boolean postSearchResponse(SSDPPacket ssdpPacket, String st, String usn)
 	{
-		Config.out("Made it to the post response for the incoming request!");
+		Config.out("UPNP POST SEARCH RESPONSE: \n" + ssdpPacket.toString());
 	    String localAddr = ssdpPacket.getLocalAddress();
 		UPNPListener rootDev = getRootDevice();
 		String rootDevLocation = rootDev.getLocationURL(localAddr);
@@ -1200,7 +1196,7 @@ public class UPNPListener extends UPnP implements org.cybergarage.http.HTTPReque
 		ssdpRes.setUSN(usn);
 		ssdpRes.setLocation(rootDevLocation);
 		// Thanks for Brent Hills (10/20/04)
-		ssdpRes.setMYNAME(getFriendlyName());
+		// not necessary? ssdpRes.setMYNAME(getFriendlyName());
 
 		int mx = ssdpPacket.getMX();
 		TimerUtil.waitRandom(mx * 1000);
@@ -1211,62 +1207,58 @@ public class UPNPListener extends UPnP implements org.cybergarage.http.HTTPReque
 		SSDPSearchResponseSocket ssdpResSock = new SSDPSearchResponseSocket();
 		//SSDPSearchResponseSocket ssdpResSock = new SSDPSearchResponseSocket(1900);
 		
-		 if (Debug.isOn() == true)
-			ssdpRes.print();
-		int ssdpCount = getSSDPAnnounceCount();
-		for (int i=0; i<ssdpCount; i++)
+		Config.out(ssdpRes);
+//		int ssdpCount = getSSDPAnnounceCount();
+//		for (int i=0; i<ssdpCount; i++)
 			ssdpResSock.post(remoteAddr, remotePort, ssdpRes);
 			
 		return true;
 	}
 	
 	public void deviceSearchResponse(SSDPPacket ssdpPacket)
-	{
-		Config.out("\nYARP" + ssdpPacket.getST());
-	    
-	    String ssdpST = ssdpPacket.getST();
+    {       
+        //System.out.println("using mediaservers search response");
+        String ssdpST = ssdpPacket.getST();
 
-		if (ssdpST == null)
-			return;
+        if (ssdpST == null)
+            return;
 
-		boolean isRootDevice = isRootDevice();
-		
-		String devUSN = getUDN();
-		if (isRootDevice == true)
-			devUSN += "::" + USN.ROOTDEVICE;
-			
-		if (ST.isAllDevice(ssdpST) == true) {
-			String devNT = getNotifyDeviceNT();			
-			int repeatCnt = (isRootDevice == true) ? 3 : 2;
-			for (int n=0; n<repeatCnt; n++)
-				postSearchResponse(ssdpPacket, devNT, devUSN);
-		}
-		else if (ST.isRootDevice(ssdpST) == true) {
-			if (isRootDevice == true)
-				postSearchResponse(ssdpPacket, ST.ROOT_DEVICE, devUSN);
-		}
-		else if (ST.isUUIDDevice(ssdpST) == true) {
-			String devUDN = getUDN();
-			if (ssdpST.equals(devUDN) == true)
-				postSearchResponse(ssdpPacket, devUDN, devUSN);
-		}
-		else if (ST.isURNDevice(ssdpST) == true) {
-			String devType= getDeviceType();
-			if (ssdpST.equals(devType) == true) {
-				// Thanks for Mikael Hakman (04/25/05)
-				devUSN = getUDN() + "::" + devType;
-				postSearchResponse(ssdpPacket, devType, devUSN);
-			}
-		}
-		
-		ServiceList serviceList = getServiceList();
-		int serviceCnt = serviceList.size();
-		for (int n=0; n<serviceCnt; n++) {
-			Service service = serviceList.getService(n);
-			service.serviceSearchResponse(ssdpPacket);
-		}
-		
-	}
+        boolean isRootDevice = isRootDevice();
+        // twinked version.
+        
+        String devUSN = getUDN();       
+            
+        if (ST.isAllDevice(ssdpST) == true) {           
+            String devNT = getNotifyDeviceNT();         
+            int repeatCnt = (isRootDevice == true) ? 3 : 2;
+            for (int n=0; n<repeatCnt; n++)
+                postSearchResponse(ssdpPacket, devNT, devUSN);
+        }
+        else if (ST.isRootDevice(ssdpST) == true) {
+            if (isRootDevice == true)
+                postSearchResponse(ssdpPacket, ST.ROOT_DEVICE, devUSN);
+        }
+        else if (ST.isUUIDDevice(ssdpST) == true) {
+            String devUDN = getUDN();
+            if (ssdpST.equals(devUDN) == true)
+                postSearchResponse(ssdpPacket, devUDN, devUSN);
+        }
+        else if (ST.isURNDevice(ssdpST) == true) {
+            String devType= getDeviceType();
+            if (ssdpST.equals(devType) == true) {
+                // Thanks for Mikael Hakman (04/25/05)
+                devUSN = getUDN() + "::" + devType;
+                postSearchResponse(ssdpPacket, devType, devUSN);
+            }
+        }
+        
+        ServiceList serviceList = getServiceList();
+        int serviceCnt = serviceList.size();
+        for (int n=0; n<serviceCnt; n++) {
+            Service service = serviceList.getService(n);
+            service.serviceSearchResponse(ssdpPacket);
+        }
+    }
 	
 	public void deviceSearchReceived(SSDPPacket ssdpPacket)
 	{
@@ -1289,7 +1281,8 @@ public class UPNPListener extends UPnP implements org.cybergarage.http.HTTPReque
 
 	public void httpRequestRecieved(HTTPRequest httpReq)
 	{
-		if (Debug.isOn() == true)
+		Config.out("UPNP LISTENER HTTP GET" + httpReq);
+	    if (Debug.isOn() == true)
 			httpReq.print();
 	
 		if (httpReq.isGetRequest() == true) {
@@ -1329,7 +1322,8 @@ public class UPNPListener extends UPnP implements org.cybergarage.http.HTTPReque
 	
 	private void httpGetRequestRecieved(HTTPRequest httpReq)
 	{
-		String uri = httpReq.getURI();
+		Config.out("UPNP HTTP REQUEST RECIEVED");
+	    String uri = httpReq.getURI();
 		Debug.message("httpGetRequestRecieved = " + uri);
 		if (uri == null) {
 			httpReq.returnBadRequest();
@@ -1384,7 +1378,8 @@ public class UPNPListener extends UPnP implements org.cybergarage.http.HTTPReque
 
 	private void soapActionRecieved(HTTPRequest soapReq)
 	{
-		String uri = soapReq.getURI();
+		Config.out("SOAP ACTION RECIEVED");
+	    String uri = soapReq.getURI();
 		Service ctlService = getServiceByControlURL(uri);
 		if (ctlService != null)  {
 			ActionRequest crlReq = new ActionRequest(soapReq);
@@ -1596,7 +1591,7 @@ public class UPNPListener extends UPnP implements org.cybergarage.http.HTTPReque
 
 	public boolean start()
 	{
-		stop(true);
+//		stop(true);
 		
 		////////////////////////////////////////
 		// SSDP Seach Socket
@@ -1612,7 +1607,7 @@ public class UPNPListener extends UPnP implements org.cybergarage.http.HTTPReque
 		// Announce
 		////////////////////////////////////////
 		
-		announce();
+		announce(Config.getAddress());
 		
 		////////////////////////////////////////
 		// Advertiser

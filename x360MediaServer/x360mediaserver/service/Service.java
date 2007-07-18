@@ -30,12 +30,12 @@ public class Service extends TrayIcon
         // TODO: Start the webserver automatically, so we can do the config thing remotely. (once the "tray icon" starts..
 //        try
 //        {
-//            mediaServer = new MediaServer();
+//           new MediaServer();
 //        }
 //        catch (BindException e)
 //        { 
 //        }
-        new Service();
+//        new Service();
     }
 
     /**

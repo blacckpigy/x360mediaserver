@@ -41,7 +41,7 @@ public class ConfigWeb
             writer.write("<HTML>\n");
             for (ConfiguratorElement element : elements)
             {
-                writer.write("<Form action=\"http://127.0.0.1:7000" + Config.configurePath + "/" +
+                writer.write("<Form action=\"http://127.0.0.1:7000" + Config.getUrl("config") + "/" +
                              element.url + "\" method=\"POST\">\n");
                 writer.write(element.formElement);
                 writer.write("<input type=\"submit\" value=\"Send\">\n");
