@@ -23,12 +23,18 @@ package x360mediaserver.upnpmediaserver.mediareceiverregistrar;
 
 
 
+import java.io.PrintWriter;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 
 import org.cybergarage.upnp.Action;
+import org.cybergarage.upnp.UPnP;
+import org.cybergarage.xml.Node;
 
+import x360mediaserver.Config;
+import x360mediaserver.ConfigXML;
 import x360mediaserver.upnpmediaserver.upnp.Service;
 
 
@@ -37,135 +43,42 @@ public class MediaReceiverRegistrar extends Service {
 	
 	// Servlet to handle the MediaReceiverRegistrar stuff in Windows Media Connect
 	
-	int callcount=0;
-	String SERVICE_TYPE="urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1";
-	
-	String SCPDString = 
-		"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-		"<scpd xmlns=\"urn:schemas-upnp-org:service-1-0\">\n" +
-		"   <specVersion>\n" +
-		"      <major>1</major>\n" +
-		"      <minor>0</minor>\n" +
-		"	</specVersion>\n" +
-		"	<actionList>\n" +
-		"		<action>\n" +
-		"         <name>IsAuthorized</name>\n" +
-		"         <argumentList>\n" +
-		"            <argument>\n" +
-		"               <name>DeviceID</name>\n" +
-		"               <direction>in</direction>\n" +
-		"               <relatedStateVariable>A_ARG_TYPE_DeviceID</relatedStateVariable>\n" +
-		"            </argument>\n" +
-		"            <argument>\n" +
-		"               <name>Result</name>\n" +
-		"               <direction>out</direction>\n" +
-		"               <relatedStateVariable>A_ARG_TYPE_Result</relatedStateVariable>\n" +
-		"            </argument>\n" +
-		"         </argumentList>\n" +
-		"      </action>\n" +
-		"      <action>\n" +
-		"         <name>RegisterDevice</name>\n" +
-		"         <argumentList>\n" +
-		"            <argument>\n" +
-		"               <name>RegistrationReqMsg</name>\n" +
-		"               <direction>in</direction>\n" +
-		"               <relatedStateVariable>A_ARG_TYPE_RegistrationReqMsg</relatedStateVariable>\n" +
-		"            </argument>\n" +
-		"            <argument>\n" +
-		"               <name>RegistrationRespMsg</name>\n" +
-		"               <direction>out</direction>\n" +
-		"               <relatedStateVariable>A_ARG_TYPE_RegistrationRespMsg</relatedStateVariable>\n" +
-		"            </argument>\n" +
-		"         </argumentList>\n" +
-		"      </action>\n" +
-		"      <action>\n" +
-		"         <name>IsValidated</name>\n" +
-		"         <argumentList>\n" +
-		"            <argument>\n" +
-		"               <name>DeviceID</name>\n" +
-		"               <direction>in</direction>\n" +
-		"               <relatedStateVariable>A_ARG_TYPE_DeviceID</relatedStateVariable>\n" +
-		"            </argument>\n" +
-		"            <argument>\n" +
-		"               <name>Result</name>\n" +
-		"               <direction>out</direction>\n" +
-		"               <relatedStateVariable>A_ARG_TYPE_Result</relatedStateVariable>\n" +
-		"            </argument>\n" +
-		"         </argumentList>\n" +
-		"      </action>\n" +
-		"   </actionList>\n" +
-		"   <serviceStateTable>\n" +
-		"      <stateVariable sendEvents=\"no\">\n" +
-		"         <name>A_ARG_TYPE_DeviceID</name>\n" +
-		"         <dataType>string</dataType>\n" +
-		"      </stateVariable>\n" +
-		"      <stateVariable sendEvents=\"no\">\n" +
-		"         <name>A_ARG_TYPE_Result</name>\n" +
-		"         <dataType>int</dataType>\n" +
-		"      </stateVariable>\n" +
-		"      <stateVariable sendEvents=\"no\">\n" +
-		"         <name>A_ARG_TYPE_RegistrationReqMsg</name>\n" +
-		"         <dataType>bin.base64</dataType>\n" +
-		"      </stateVariable>\n" +
-		"      <stateVariable sendEvents=\"no\">\n" +
-		"         <name>A_ARG_TYPE_RegistrationRespMsg</name>\n" +
-		"         <dataType>bin.base64</dataType>\n" +
-		"      </stateVariable>\n" +
-		
-		
-		"      <stateVariable sendEvents=\"no\">\n" +
-		"         <name>AuthorizationGrantedUpdateID</name>\n" +
-		"         <dataType>ui4</dataType>\n" +
-		"      </stateVariable>\n" +
-		"      <stateVariable sendEvents=\"no\">\n" +
-		"         <name>AuthorizationDeniedUpdateID</name>\n" +
-		"         <dataType>ui4</dataType>\n" +
-		"      </stateVariable>\n" +
-		"      <stateVariable sendEvents=\"no\">\n" +
-		"         <name>ValidationSucceededUpdateID</name>\n" +
-		"         <dataType>ui4</dataType>\n" +
-		"      </stateVariable>\n" +		
-		"      <stateVariable sendEvents=\"no\">\n" +
-		"         <name>ValidationRevokedUpdateID</name>\n" +
-		"         <dataType>ui4</dataType>\n" +
-		"      </stateVariable>\n" +				
-		"   </serviceStateTable>\n" +
-		"</scpd>";	
+	int    callcount    = 0;
 
-	
-	public MediaReceiverRegistrar(){
-		super();
-		try{
-		debug(System.currentTimeMillis()+ " Servlet init");
-		loadSCPD(SCPDString);
+    public MediaReceiverRegistrar(Node node, String serviceString)
+    {
+        super();
+        try
+        {
+            debug(System.currentTimeMillis() + " X_MS_MediaReceiverRegistrar init");
+            loadSCPD(node);
 
-		buildActionList();
-		//this.getServletContext().log("boo");
-		
-		}
-		catch(Exception e){
-			e.printStackTrace();
-		}
-		
-		
-	}
-	
-	public void doGet(HttpServletRequest req,HttpServletResponse resp){
-		
-		
-		try{
-			resp.getWriter().write(SCPDString);
-		}
-		catch(Exception e){
-			e.printStackTrace();
-		}
+            buildActionList();
+            this.setServiceString(serviceString);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
 
-	}
+    }
+	
+	public void doGet(HttpServletRequest req, HttpServletResponse resp)
+    {
+	    Config.out("MEDIA RECIEVER REGISTER HTTP GET");
+        try
+        {
+            PrintWriter writer = resp.getWriter();
+            writer.write(UPnP.XML_DECLARATION + "\n" );
+            writer.write(getSCPDNode().toString());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
 	
 
-
-	
-	
 	protected boolean doAction(Action action,String ServerAddress){
 		debug("Action received:"+action.getName());
 		if(action.getName().contains("IsAuthorized"))

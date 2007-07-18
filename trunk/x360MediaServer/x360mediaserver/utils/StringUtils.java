@@ -7,7 +7,6 @@ public class StringUtils
         String result = inputString.replaceAll("&", "&amp;");
         result.replaceAll("ö", "&ouml;");
         result.replaceAll("ï", "&iuml;");
-        result.replaceAll("\\", "&apos;");
         result.replaceAll("<", "&lt;");
         result.replaceAll(">", "&gt;");
         result.replaceAll("\n", "&#xA;");
@@ -23,7 +22,6 @@ public class StringUtils
         String result = inputString.replaceAll("&amp;", "&");
         result.replaceAll("&ouml;", "ö");
         result.replaceAll("&iuml;", "ï");
-        result.replaceAll("&apos;", "\\");
         result.replaceAll("&lt;", "<");
         result.replaceAll("&gt;", ">");
         result.replaceAll("&#xA;", "\n");

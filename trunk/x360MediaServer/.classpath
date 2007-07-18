@@ -1,17 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry combineaccessrules="false" kind="src" path="/jetty-6.1.5rc0"/>
 	<classpathentry kind="src" path=""/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/cyberlink/clink170.jar"/>
-	<classpathentry kind="lib" path="lib/cyberlink/cmgatejava120.jar"/>
+	<classpathentry kind="lib" path="lib/cyberlink/cmgatejava120.jar" sourcepath="lib/cyberlink/cmgatejava120.jar"/>
 	<classpathentry kind="lib" path="lib/entagged/entagged-audioformats-0.15.jar"/>
-	<classpathentry kind="lib" path="lib/jetty/commons-logging.jar"/>
-	<classpathentry kind="lib" path="lib/jetty/javax.servlet.jar"/>
-	<classpathentry kind="lib" path="lib/jetty/jetty-6.0.1.jar"/>
-	<classpathentry kind="lib" path="lib/jetty/jetty-util-6.0.1.jar"/>
-	<classpathentry kind="lib" path="lib/jetty/org.mortbay.jetty.jar"/>
-	<classpathentry kind="lib" path="lib/jetty/servlet-api-2.5-6.0.1.jar"/>
-	<classpathentry kind="lib" path="lib/xerces/xercesImpl.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/org.eclipse.swt"/>
+	<classpathentry kind="lib" path="lib/jetty/jetty-6.1.5rc0.jar"/>
+	<classpathentry kind="lib" path="lib/jetty/servlet-api-2.5-6.1.5rc0.jar"/>
+	<classpathentry kind="lib" path="lib/jetty/jetty-util-6.1.5rc0.jar"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>

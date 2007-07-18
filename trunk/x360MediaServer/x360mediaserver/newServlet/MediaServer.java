@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.cybergarage.upnp.UPnP;
 import org.cybergarage.upnp.device.InvalidDescriptionException;
 
 import x360mediaserver.Config;
@@ -78,11 +79,13 @@ public class MediaServer extends HttpServlet
         try
         {
             Config.out("Setting up UPNP responder");
-            upnpResponder = new UPNPResponder(Config.getDescriptionNode(), CONTENT_DIRECTORY_SCPD,
-                                              CONNECTION_MANAGER_SCPD,
-                                              MEDIA_RECEIVER_REGISTRAR_SCPD, Config.getAddress(),
+            upnpResponder = new UPNPResponder(Config.getDescriptionNode(), Config.getContent_directoryNode(),
+                                              Config.getConnection_managerNode(),
+                                              Config.getMedia_reciever_registrarNode(), Config.getAddress(),
                                               Config.getPort());
-            upnpResponder.start();
+            
+            // Don't forget to shutdown the server after starting it up.... (also the webserver... -- have to "flush bufferes?")
+            upnpResponder.start(); 
         }
         catch (InvalidDescriptionException e)
         { 
@@ -108,19 +111,19 @@ public class MediaServer extends HttpServlet
     // This is for HTTP traffic as well.
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
     {
-        debug("Do Post: " + req.getPathInfo());
+        debug("MEDIA SERVER: Do Post:" + req.getPathInfo());
 
         try
         {
-            if (req.getPathInfo().contains(Config.contentDirectoryPath))
+            if (req.getPathInfo().contains("ContentDirectory"))
             {
                 debug("Sending to content dir");
-                Config.contentDirectory.doPost(req, resp);
+                Config.getContentDirectory().doPost(req, resp);
             }
-            else if (req.getPathInfo().contains(Config.mediaRecRegPath))
+            else if (req.getPathInfo().contains("X_MS_MediaReceiverRegistrar"))
             {
                 debug("Sending to media reciever");
-                Config.mediaReceiverReg.doPost(req, resp);
+                Config.getMediaReceiverReg().doPost(req, resp);
             }
             else if (req.getPathInfo().contains("configure"))
             {
@@ -140,29 +143,29 @@ public class MediaServer extends HttpServlet
      */
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
     {
+        System.out.println("MEDIA SERVER: doGet: " + req.getPathInfo());
         try
         {
-            System.out.println("doGet: " + req.getPathInfo());
-            if (req.getPathInfo().contains(Config.contentDirectoryPath))
+            if (req.getPathInfo().contains("ContentDirectory"))
             {
-                System.out.println("Got path:" + Config.contentDirectoryPath);
-                Config.contentDirectory.doGet(req, resp);
+                Config.out("Got path:" + Config.getUrl("ContentDirectory"));
+                Config.getContentDirectory().doGet(req, resp);
             }
-            else if (req.getPathInfo().contains(Config.mediaRecRegPath))
+            else if (req.getPathInfo().contains("X_MS_MediaReceiverRegistrar"))
             {
-                System.out.println("Got media:" + Config.mediaRecRegPath);
-                Config.mediaReceiverReg.doGet(req, resp);
+                Config.out("Got media:" + Config.getUrl("X_MS_MediaReceiverRegistrar"));
+                Config.getMediaReceiverReg().doGet(req, resp);
             }
-            else if (req.getPathInfo().contains(Config.configurePath))
+            else if (req.getPathInfo().contains("config"))
             {
-                System.out.println("Got config:" + Config.configurePath);
+                Config.out("Got config:" + Config.getUrl("config"));
                 ConfigWeb.doGet(req, resp);
             }
-            else
+            else // if (req.getPathInfo().contains(Config.getUrl("MediaServer")))
             {
-                System.out.println("Got ???:" + req);
+                Config.out("Got device description:" + req);
                 PrintWriter writer = resp.getWriter();
-                writer.write("<?xml version=\"1.0\"?>\n");
+                writer.write(UPnP.XML_DECLARATION + "\n");
                 writer.write(Config.getDescriptionNode().toString());
             }
         }
@@ -187,633 +190,4 @@ public class MediaServer extends HttpServlet
     {
         return webserver;
     }
-    
-    
-    public final static String CONTENT_DIRECTORY_SCPD = 
-        "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" + 
-        "<scpd xmlns=\"urn:schemas-upnp-org:service-1-0\">\n" + 
-        "   <specVersion>\n" + 
-        "      <major>1</major>\n" + 
-        "      <minor>0</minor>\n" + 
-        "   </specVersion>\n" + 
-        "   <actionList>\n" + 
-        "      <action>\n" + 
-        "         <name>ExportResource</name>\n" + 
-        "         <argumentList>\n" + 
-        "            <argument>\n" + 
-        "               <name>SourceURI</name>\n" + 
-        "               <direction>in</direction>\n" + 
-        "               <relatedStateVariable>A_ARG_TYPE_URI</relatedStateVariable>\n" + 
-        "            </argument>\n" + 
-        "            <argument>\n" + 
-        "               <name>DestinationURI</name>\n" + 
-        "               <direction>in</direction>\n" + 
-        "               <relatedStateVariable>A_ARG_TYPE_URI</relatedStateVariable>\n" + 
-        "            </argument>\n" + 
-        "            <argument>\n" + 
-        "               <name>TransferID</name>\n" + 
-        "               <direction>out</direction>\n" + 
-        "               <relatedStateVariable>A_ARG_TYPE_TransferID</relatedStateVariable>\n" + 
-        "            </argument>\n" + 
-        "         </argumentList>\n" + 
-        "      </action>\n" + 
-        "      <action>\n" + 
-        "         <name>StopTransferResource</name>\n" + 
-        "         <argumentList>\n" + 
-        "            <argument>\n" + 
-        "               <name>TransferID</name>\n" + 
-        "               <direction>in</direction>\n" + 
-        "               <relatedStateVariable>A_ARG_TYPE_TransferID</relatedStateVariable>\n" + 
-        "            </argument>\n" + 
-        "         </argumentList>\n" + 
-        "      </action>\n" + 
-        "      <action>\n" + 
-        "         <name>DestroyObject</name>\n" + 
-        "         <argumentList>\n" + 
-        "            <argument>\n" + 
-        "               <name>ObjectID</name>\n" + 
-        "               <direction>in</direction>\n" + 
-        "               <relatedStateVariable>A_ARG_TYPE_ObjectID</relatedStateVariable>\n" + 
-        "            </argument>\n" + 
-        "         </argumentList>\n" + 
-        "      </action>\n" + 
-        "      <action>\n" + 
-        "         <name>DeleteResource</name>\n" + 
-        "         <argumentList>\n" + 
-        "            <argument>\n" + 
-        "               <name>ResourceURI</name>\n" + 
-        "               <direction>in</direction>\n" + 
-        "               <relatedStateVariable>A_ARG_TYPE_URI</relatedStateVariable>\n" + 
-        "            </argument>\n" + 
-        "         </argumentList>\n" + 
-        "      </action>\n" + 
-        "      <action>\n" + 
-        "         <name>UpdateObject</name>\n" + 
-        "         <argumentList>\n" + 
-        "            <argument>\n" + 
-        "               <name>ObjectID</name>\n" + 
-        "               <direction>in</direction>\n" + 
-        "               <relatedStateVariable>A_ARG_TYPE_ObjectID</relatedStateVariable>\n" + 
-        "            </argument>\n" + 
-        "            <argument>\n" + 
-        "               <name>CurrentTagValue</name>\n" + 
-        "               <direction>in</direction>\n" + 
-        "               <relatedStateVariable>A_ARG_TYPE_TagValueList</relatedStateVariable>\n" + 
-        "            </argument>\n" + 
-        "            <argument>\n" + 
-        "               <name>NewTagValue</name>\n" + 
-        "               <direction>in</direction>\n" + 
-        "               <relatedStateVariable>A_ARG_TYPE_TagValueList</relatedStateVariable>\n" + 
-        "            </argument>\n" + 
-        "         </argumentList>\n" + 
-        "      </action>\n" + 
-        "      <action>\n" + 
-        "         <name>Browse</name>\n" + 
-        "         <argumentList>\n" + 
-        "            <argument>\n" + 
-        "               <name>ObjectID</name>\n" + 
-        "               <direction>in</direction>\n" + 
-        "               <relatedStateVariable>A_ARG_TYPE_ObjectID</relatedStateVariable>\n" + 
-        "            </argument>\n" + 
-        "            <argument>\n" + 
-        "               <name>BrowseFlag</name>\n" + 
-        "               <direction>in</direction>\n" + 
-        "               <relatedStateVariable>A_ARG_TYPE_BrowseFlag</relatedStateVariable>\n" + 
-        "            </argument>\n" + 
-        "            <argument>\n" + 
-        "               <name>Filter</name>\n" + 
-        "               <direction>in</direction>\n" + 
-        "               <relatedStateVariable>A_ARG_TYPE_Filter</relatedStateVariable>\n" + 
-        "            </argument>\n" + 
-        "            <argument>\n" + 
-        "               <name>StartingIndex</name>\n" + 
-        "               <direction>in</direction>\n" + 
-        "               <relatedStateVariable>A_ARG_TYPE_Index</relatedStateVariable>\n" + 
-        "            </argument>\n" + 
-        "            <argument>\n" + 
-        "               <name>RequestedCount</name>\n" +
-        "               <direction>in</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_Count</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>SortCriteria</name>\n" +
-        "               <direction>in</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_SortCriteria</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>Result</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_Result</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>NumberReturned</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_Count</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>TotalMatches</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_Count</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>UpdateID</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_UpdateID</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "         </argumentList>\n" +
-        "      </action>\n" +
-        "      <action>\n" +
-        "         <name>GetTransferProgress</name>\n" +
-        "         <argumentList>\n" +
-        "            <argument>\n" +
-        "               <name>TransferID</name>\n" +
-        "               <direction>in</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_TransferID</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>TransferStatus</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_TransferStatus</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>TransferLength</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_TransferLength</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>TransferTotal</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_TransferTotal</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "         </argumentList>\n" +
-        "      </action>\n" +
-        "      <action>\n" +
-        "         <name>GetSearchCapabilities</name>\n" +
-        "         <argumentList>\n" +
-        "            <argument>\n" +
-        "               <name>SearchCaps</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>SearchCapabilities</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "         </argumentList>\n" +
-        "      </action>\n" +
-        "      <action>\n" +
-        "         <name>CreateObject</name>\n" +
-        "         <argumentList>\n" +
-        "            <argument>\n" +
-        "               <name>ContainerID</name>\n" +
-        "               <direction>in</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_ObjectID</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>Elements</name>\n" +
-        "               <direction>in</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_Result</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>ObjectID</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_ObjectID</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>Result</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_Result</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "         </argumentList>\n" +
-        "      </action>\n" +
-        "      <action>\n" +
-        "         <name>Search</name>\n" +
-        "         <argumentList>\n" +
-        "            <argument>\n" +
-        "               <name>ContainerID</name>\n" +
-        "               <direction>in</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_ObjectID</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>SearchCriteria</name>\n" +
-        "               <direction>in</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_SearchCriteria</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>Filter</name>\n" +
-        "               <direction>in</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_Filter</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>StartingIndex</name>\n" +
-        "               <direction>in</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_Index</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>RequestedCount</name>\n" +
-        "               <direction>in</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_Count</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>SortCriteria</name>\n" +
-        "               <direction>in</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_SortCriteria</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>Result</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_Result</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>NumberReturned</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_Count</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>TotalMatches</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_Count</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>UpdateID</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_UpdateID</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "         </argumentList>\n" +
-        "      </action>\n" +
-        "      <action>\n" +
-        "         <name>GetSortCapabilities</name>\n" +
-        "         <argumentList>\n" +
-        "            <argument>\n" +
-        "               <name>SortCaps</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>SortCapabilities</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "         </argumentList>\n" +
-        "      </action>\n" +
-        "      <action>\n" +
-        "         <name>ImportResource</name>\n" +
-        "         <argumentList>\n" +
-        "            <argument>\n" +
-        "               <name>SourceURI</name>\n" +
-        "               <direction>in</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_URI</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>DestinationURI</name>\n" +
-        "               <direction>in</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_URI</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>TransferID</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_TransferID</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "         </argumentList>\n" +
-        "      </action>\n" +
-        "      <action>\n" +
-        "         <name>CreateReference</name>\n" +
-        "         <argumentList>\n" +
-        "            <argument>\n" +
-        "               <name>ContainerID</name>\n" +
-        "               <direction>in</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_ObjectID</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>ObjectID</name>\n" +
-        "               <direction>in</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_ObjectID</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>NewID</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_ObjectID</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "         </argumentList>\n" +
-        "      </action>\n" +
-        "      <action>\n" +
-        "         <name>GetSystemUpdateID</name>\n" +
-        "         <argumentList>\n" +
-        "            <argument>\n" +
-        "              <name>Id</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>SystemUpdateID</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "         </argumentList>\n" +
-        "      </action>\n" +
-        "   </actionList>\n" +
-        "   <serviceStateTable>\n" +
-        "      <stateVariable sendEvents=\"no\">\n" +
-        "         <name>A_ARG_TYPE_SortCriteria</name>\n" +
-        "         <dataType>string</dataType>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"no\">\n" +
-        "         <name>A_ARG_TYPE_TransferLength</name>\n" +
-        "         <dataType>string</dataType>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"yes\">\n" +
-        "         <name>TransferIDs</name>\n" +
-        "         <dataType>string</dataType>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"no\">\n" +
-        "         <name>A_ARG_TYPE_UpdateID</name>\n" +
-        "         <dataType>ui4</dataType>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"no\">\n" +
-        "         <name>A_ARG_TYPE_SearchCriteria</name>\n" +
-        "         <dataType>string</dataType>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"no\">\n" +
-        "         <name>A_ARG_TYPE_Filter</name>\n" +
-        "         <dataType>string</dataType>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"yes\">\n" +
-        "         <name>ContainerUpdateIDs</name>\n" +
-        "         <dataType>string</dataType>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"no\">\n" +
-        "         <name>A_ARG_TYPE_Result</name>\n" +
-        "         <dataType>string</dataType>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"no\">\n" +
-        "         <name>A_ARG_TYPE_Index</name>\n" +
-        "         <dataType>ui4</dataType>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"no\">\n" +
-        "         <name>A_ARG_TYPE_TransferID</name>\n" +
-        "         <dataType>ui4</dataType>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"no\">\n" +
-        "         <name>A_ARG_TYPE_TagValueList</name>\n" +
-        "         <dataType>string</dataType>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"no\">\n" +
-        "         <name>A_ARG_TYPE_URI</name>\n" +
-        "         <dataType>uri</dataType>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"no\">\n" +
-        "         <name>A_ARG_TYPE_ObjectID</name>\n" +
-        "         <dataType>string</dataType>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"no\">\n" +
-        "         <name>SortCapabilities</name>\n" +
-        "         <dataType>string</dataType>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"no\">\n" +
-        "         <name>SearchCapabilities</name>\n" +
-        "         <dataType>string</dataType>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"no\">\n" +
-        "         <name>A_ARG_TYPE_Count</name>\n" +
-        "         <dataType>ui4</dataType>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"no\">\n" +
-        "         <name>A_ARG_TYPE_BrowseFlag</name>\n" +
-        "         <dataType>string</dataType>\n" +
-        "         <allowedValueList>\n" +
-        "            <allowedValue>BrowseMetadata</allowedValue>\n" +
-        "            <allowedValue>BrowseDirectChildren</allowedValue>\n" +
-        "         </allowedValueList>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"yes\">\n" +
-        "         <name>SystemUpdateID</name>\n" +
-        "         <dataType>ui4</dataType>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"no\">\n" +
-        "         <name>A_ARG_TYPE_TransferStatus</name>\n" +
-        "         <dataType>string</dataType>\n" +
-        "         <allowedValueList>\n" +
-        "            <allowedValue>COMPLETED</allowedValue>\n" +
-        "            <allowedValue>ERROR</allowedValue>\n" +
-        "            <allowedValue>IN_PROGRESS</allowedValue>\n" +
-        "            <allowedValue>STOPPED</allowedValue>\n" +
-        "         </allowedValueList>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"no\">\n" +
-        "         <name>A_ARG_TYPE_TransferTotal</name>\n" +
-        "         <dataType>string</dataType>\n" +
-        "      </stateVariable>\n" +
-        "   </serviceStateTable>\n" +
-        "</scpd>";
-    
-    public final static String MEDIA_RECEIVER_REGISTRAR_SCPD = 
-        "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-        "<scpd xmlns=\"urn:schemas-upnp-org:service-1-0\">\n" +
-        "   <specVersion>\n" +
-        "      <major>1</major>\n" +
-        "      <minor>0</minor>\n" +
-        "   </specVersion>\n" +
-        "   <actionList>\n" +
-        "       <action>\n" +
-        "         <name>IsAuthorized</name>\n" +
-        "         <argumentList>\n" +
-        "            <argument>\n" +
-        "               <name>DeviceID</name>\n" +
-        "               <direction>in</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_DeviceID</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>Result</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_Result</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "         </argumentList>\n" +
-        "      </action>\n" +
-        "      <action>\n" +
-        "         <name>RegisterDevice</name>\n" +
-        "         <argumentList>\n" +
-        "            <argument>\n" +
-        "               <name>RegistrationReqMsg</name>\n" +
-        "               <direction>in</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_RegistrationReqMsg</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>RegistrationRespMsg</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_RegistrationRespMsg</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "         </argumentList>\n" +
-        "      </action>\n" +
-        "      <action>\n" +
-        "         <name>IsValidated</name>\n" +
-        "         <argumentList>\n" +
-        "            <argument>\n" +
-        "               <name>DeviceID</name>\n" +
-        "               <direction>in</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_DeviceID</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>Result</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_Result</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "         </argumentList>\n" +
-        "      </action>\n" +
-        "   </actionList>\n" +
-        "   <serviceStateTable>\n" +
-        "      <stateVariable sendEvents=\"no\">\n" +
-        "         <name>A_ARG_TYPE_DeviceID</name>\n" +
-        "         <dataType>string</dataType>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"no\">\n" +
-        "         <name>A_ARG_TYPE_Result</name>\n" +
-        "         <dataType>int</dataType>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"no\">\n" +
-        "         <name>A_ARG_TYPE_RegistrationReqMsg</name>\n" +
-        "         <dataType>bin.base64</dataType>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"no\">\n" +
-        "         <name>A_ARG_TYPE_RegistrationRespMsg</name>\n" +
-        "         <dataType>bin.base64</dataType>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"no\">\n" +
-        "         <name>AuthorizationGrantedUpdateID</name>\n" +
-        "         <dataType>ui4</dataType>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"no\">\n" +
-        "         <name>AuthorizationDeniedUpdateID</name>\n" +
-        "         <dataType>ui4</dataType>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"no\">\n" +
-        "         <name>ValidationSucceededUpdateID</name>\n" +
-        "         <dataType>ui4</dataType>\n" +
-        "      </stateVariable>\n" +        
-        "      <stateVariable sendEvents=\"no\">\n" +
-        "         <name>ValidationRevokedUpdateID</name>\n" +
-        "         <dataType>ui4</dataType>\n" +
-        "      </stateVariable>\n" +            
-        "   </serviceStateTable>\n" +
-        "</scpd>";
-    
-    
-    public final static String CONNECTION_MANAGER_SCPD = 
-        "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-        "<scpd xmlns=\"urn:schemas-upnp-org:service-1-0\">\n" +
-        "   <specVersion>\n" +
-        "      <major>1</major>\n" +
-        "      <minor>0</minor>\n" +
-        "   </specVersion>\n" +
-        "   <actionList>\n" +
-        "       <action>\n" +
-        "         <name>GetCurrentConnectionInfo</name>\n" +
-        "         <argumentList>\n" +
-        "            <argument>\n" +
-        "               <name>ConnectionID</name>\n" +
-        "               <direction>in</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_ConnectionID</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>RcsID</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_RcsID</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>AVTransportID</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_AVTransportID</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>ProtocolInfo</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_ProtocolInfo</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>PeerConnectionManager</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_ConnectionManager</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>PeerConnectionID</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_ConnectionID</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>Direction</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_Direction</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>Status</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_ConnectionStatus</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "         </argumentList>\n" +
-        "      </action>\n" +
-        "      <action>\n" +
-        "         <name>GetProtocolInfo</name>\n" +
-        "         <argumentList>\n" +
-        "            <argument>\n" +
-        "               <name>Source</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>SourceProtocolInfo</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>Sink</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>SinkProtocolInfo</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "         </argumentList>\n" +
-        "      </action>\n" +
-        "      <action>\n" +
-        "         <name>GetCurrentConnectionIDs</name>\n" +
-        "         <argumentList>\n" +
-        "            <argument>\n" +
-        "               <name>ConnectionIDs</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>CurrentConnectionIDs</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "         </argumentList>\n" +
-        "      </action>\n" +
-        "   </actionList>\n" +
-        "   <serviceStateTable>\n" +
-        "      <stateVariable sendEvents=\"no\">\n" +
-        "         <name>A_ARG_TYPE_ProtocolInfo</name>\n" +
-        "         <dataType>string</dataType>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"no\">\n" +
-        "         <name>A_ARG_TYPE_ConnectionStatus</name>\n" +
-        "         <dataType>string</dataType>\n" +
-        "         <allowedValueList>\n" +
-        "            <allowedValue>OK</allowedValue>\n" +
-        "            <allowedValue>ContentFormatMismatch</allowedValue>\n" +
-        "            <allowedValue>InsufficientBandwidth</allowedValue>\n" +
-        "            <allowedValue>UnreliableChannel</allowedValue>\n" +
-        "            <allowedValue>Unknown</allowedValue>\n" +
-        "         </allowedValueList>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"no\">\n" +
-        "         <name>A_ARG_TYPE_AVTransportID</name>\n" +
-        "         <dataType>i4</dataType>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"no\">\n" +
-        "         <name>A_ARG_TYPE_RcsID</name>\n" +
-        "         <dataType>i4</dataType>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"no\">\n" +
-        "         <name>A_ARG_TYPE_ConnectionID</name>\n" +
-        "         <dataType>i4</dataType>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"no\">\n" +
-        "         <name>A_ARG_TYPE_ConnectionManager</name>\n" +
-        "         <dataType>string</dataType>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"yes\">\n" +
-        "         <name>SourceProtocolInfo</name>\n" +
-        "         <dataType>string</dataType>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"yes\">\n" +
-        "         <name>SinkProtocolInfo</name>\n" +
-        "         <dataType>string</dataType>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"no\">\n" +
-        "         <name>A_ARG_TYPE_Direction</name>\n" +
-        "         <dataType>string</dataType>\n" +
-        "         <allowedValueList>\n" +
-        "            <allowedValue>Input</allowedValue>\n" +
-        "            <allowedValue>Output</allowedValue>\n" +
-        "         </allowedValueList>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"yes\">\n" +
-        "         <name>CurrentConnectionIDs</name>\n" +
-        "         <dataType>string</dataType>\n" +
-        "      </stateVariable>\n" +
-        "   </serviceStateTable>\n" +
-        "</scpd>";
 }

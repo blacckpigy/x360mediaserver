@@ -19,13 +19,14 @@ package x360mediaserver.upnpmediaserver.responder;
 
 import java.util.Vector;
 
-public class ServiceList extends Vector 
+public class ServiceList extends Vector<Service>
 {
 	////////////////////////////////////////////////
 	//	Constants
 	////////////////////////////////////////////////
 	
-	public final static String ELEM_NAME = "serviceList";
+    private static final long serialVersionUID = 1L;
+    public final static String ELEM_NAME = "serviceList";
 
 	////////////////////////////////////////////////
 	//	Constructor
@@ -41,12 +42,13 @@ public class ServiceList extends Vector
 	
 	public Service getService(int n)
 	{
-		Object obj = null;
-		try {
-			obj = get(n);
-		}
-		catch (Exception e) {};
-		return (Service)obj;
+		try
+        {
+            return get(n);
+        }
+        catch (Exception e)
+        { }
+        return null;
 	}
 }
 
