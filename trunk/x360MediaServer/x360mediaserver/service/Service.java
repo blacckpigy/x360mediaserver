@@ -35,7 +35,7 @@ public class Service extends TrayIcon
 //        catch (BindException e)
 //        { 
 //        }
-//        new Service();
+        new Service();
     }
 
     /**

@@ -19,7 +19,7 @@ package x360mediaserver.upnpmediaserver.responder;
 
 import java.util.Vector;
 
-public class ServiceList extends Vector<Service>
+public class ServiceList extends Vector<MyService>
 {
 	////////////////////////////////////////////////
 	//	Constants
@@ -40,7 +40,7 @@ public class ServiceList extends Vector<Service>
 	//	Methods
 	////////////////////////////////////////////////
 	
-	public Service getService(int n)
+	public MyService getService(int n)
 	{
 		try
         {

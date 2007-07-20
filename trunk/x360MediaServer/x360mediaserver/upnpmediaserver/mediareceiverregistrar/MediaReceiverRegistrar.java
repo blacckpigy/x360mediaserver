@@ -35,11 +35,11 @@ import org.cybergarage.xml.Node;
 
 import x360mediaserver.Config;
 import x360mediaserver.ConfigXML;
-import x360mediaserver.upnpmediaserver.upnp.Service;
+import x360mediaserver.upnpmediaserver.upnp.MediaService;
 
 
 
-public class MediaReceiverRegistrar extends Service {
+public class MediaReceiverRegistrar extends MediaService {
 	
 	// Servlet to handle the MediaReceiverRegistrar stuff in Windows Media Connect
 	
