@@ -17,57 +17,60 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-
 package x360mediaserver.upnpmediaserver.upnp.formats.tags;
 
 import java.io.File;
 
 import x360mediaserver.upnpmediaserver.upnp.items.Tag;
 
-
 import entagged.audioformats.AudioFile;
 import entagged.audioformats.AudioFileIO;
 import entagged.audioformats.exceptions.CannotReadException;
 
-public class EntaggedTagger implements Tagger {
+public class EntaggedTagger implements Tagger
+{
 
-	public Tag getTag(File file) {
-		Tag result=new Tag();
-		AudioFile audiofile;
-		try{
-			audiofile=AudioFileIO.read(file);
-			
-			entagged.audioformats.Tag entaggedtag=audiofile.getTag();
-			result.setAlbum(entaggedtag.getFirstAlbum());
-			result.setArtist(entaggedtag.getFirstArtist());
-			result.setTitle(entaggedtag.getFirstTitle());
-			result.setYear(entaggedtag.getFirstYear());
-			result.setSamplerate(audiofile.getSamplingRate());
-			result.setBitrate(audiofile.getBitrate());
-			
-			try{
-				result.setTracknumber(Integer.parseInt(entaggedtag.getFirstTrack()));
-			}
-			catch(NumberFormatException e){
-				System.out.println("No Tracknumber for file "+file.toString());
-			}
-			result.setTime((long)(audiofile.getPreciseLength()*1000));			
-		}
-		catch(CannotReadException e){
-			System.out.println("Exception for file:"+file.toString()+" "+e.toString());
-		}
-		catch(Exception e){
-			System.out.println("Exception for file:"+file.toString()+" "+e.toString());
-		}
-		finally{
-			result.fillBlanks(file);
-		}
+    public Tag getTag(File file)
+    {
+        Tag result = new Tag();
+        AudioFile audiofile;
+        try
+        {
+            audiofile = AudioFileIO.read(file);
 
-		
-		
-		
-		// TODO Auto-generated method stub
-		return result;
-	}
+            entagged.audioformats.Tag entaggedtag = audiofile.getTag();
+            result.setAlbum(entaggedtag.getFirstAlbum());
+            result.setArtist(entaggedtag.getFirstArtist());
+            result.setTitle(entaggedtag.getFirstTitle());
+            result.setYear(entaggedtag.getFirstYear());
+            result.setSamplerate(audiofile.getSamplingRate());
+            result.setBitrate(audiofile.getBitrate());
+
+            try
+            {
+                result.setTracknumber(Integer.parseInt(entaggedtag.getFirstTrack()));
+            }
+            catch (NumberFormatException e)
+            {
+                System.out.println("No Tracknumber for file " + file.toString());
+            }
+            result.setTime((long) (audiofile.getPreciseLength() * 1000));
+        }
+        catch (CannotReadException e)
+        {
+            System.out.println("Exception for file:" + file.toString() + " " + e.toString());
+        }
+        catch (Exception e)
+        {
+            System.out.println("Exception for file:" + file.toString() + " " + e.toString());
+        }
+        finally
+        {
+            result.fillBlanks(file);
+        }
+
+        // TODO Auto-generated method stub
+        return result;
+    }
 
 }
