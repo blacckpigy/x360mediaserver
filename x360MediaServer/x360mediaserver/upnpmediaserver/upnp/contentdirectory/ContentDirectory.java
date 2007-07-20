@@ -33,11 +33,11 @@ import org.cybergarage.xml.Node;
 
 import x360mediaserver.Config;
 import x360mediaserver.ConfigStream;
-import x360mediaserver.upnpmediaserver.upnp.Service;
+import x360mediaserver.upnpmediaserver.upnp.MediaService;
 import x360mediaserver.upnpmediaserver.upnp.items.Media;
 import x360mediaserver.upnpmediaserver.upnp.items.Song;
 
-public class ContentDirectory extends Service
+public class ContentDirectory extends MediaService
 {
 
     File        basePath       = null;

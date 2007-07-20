@@ -103,8 +103,11 @@ import org.cybergarage.soap.SOAPResponse;
 import org.cybergarage.upnp.Action;
 import org.cybergarage.upnp.ActionList;
 import org.cybergarage.upnp.ArgumentList;
+import org.cybergarage.upnp.Device;
 import org.cybergarage.upnp.Icon;
 import org.cybergarage.upnp.IconList;
+import org.cybergarage.upnp.Service;
+import org.cybergarage.upnp.ServiceList;
 import org.cybergarage.upnp.StateVariable;
 import org.cybergarage.upnp.UPnP;
 import org.cybergarage.upnp.UPnPStatus;
@@ -139,62 +142,62 @@ import org.cybergarage.xml.XML;
 
 import x360mediaserver.Config;
 
-public class UPNPListener extends UPnP implements org.cybergarage.http.HTTPRequestListener, SearchListener
+public class UPNPListener extends Device
 {
-	////////////////////////////////////////////////
-	//	Constants
-	////////////////////////////////////////////////
-	
-	public final static String ELEM_NAME = "device";
-	public final static String UPNP_ROOTDEVICE = "upnp:rootdevice";
-
-	public final static int DEFAULT_STARTUP_WAIT_TIME = 1000;
-	public final static int DEFAULT_DISCOVERY_WAIT_TIME = 3;
-	public final static int DEFAULT_LEASE_TIME = 30 * 60;
-
-	public final static int HTTP_DEFAULT_PORT = 4004;
-
-	public final static String DEFAULT_DESCRIPTION_URI = "/description.xml";
-	
-	////////////////////////////////////////////////
-	//	Member
-	////////////////////////////////////////////////
-
-	private Node rootNode;
-	private Node deviceNode;
-
-	public Node getRootNode()
-	{
-		if (rootNode != null)
-			return rootNode;
-		if (deviceNode == null)
-			return null;
-		return deviceNode.getRootNode();
-	}
-
-	public Node getDeviceNode()
-	{
-		return deviceNode;
-	}
-
-	public void setRootNode(Node node)
-	{
-		rootNode = node;
-	}
-
-	public void setDeviceNode(Node node)
-	{
-		deviceNode = node;
-	}
-				
-	////////////////////////////////////////////////
-	//	Initialize
-	////////////////////////////////////////////////
-	
-	static 
-	{
-		UPnP.initialize();
-	}
+//	////////////////////////////////////////////////
+//	//	Constants
+//	////////////////////////////////////////////////
+//	
+//	public final static String ELEM_NAME = "device";
+//	public final static String UPNP_ROOTDEVICE = "upnp:rootdevice";
+//
+//	public final static int DEFAULT_STARTUP_WAIT_TIME = 1000;
+//	public final static int DEFAULT_DISCOVERY_WAIT_TIME = 3;
+//	public final static int DEFAULT_LEASE_TIME = 30 * 60;
+//
+//	public final static int HTTP_DEFAULT_PORT = 4004;
+//
+//	public final static String DEFAULT_DESCRIPTION_URI = "/description.xml";
+//	
+//	////////////////////////////////////////////////
+//	//	Member
+//	////////////////////////////////////////////////
+//
+//	private Node rootNode;
+//	private Node deviceNode;
+//
+//	public Node getRootNode()
+//	{
+//		if (rootNode != null)
+//			return rootNode;
+//		if (deviceNode == null)
+//			return null;
+//		return deviceNode.getRootNode();
+//	}
+//
+//	public Node getDeviceNode()
+//	{
+//		return deviceNode;
+//	}
+//
+//	public void setRootNode(Node node)
+//	{
+//		rootNode = node;
+//	}
+//
+//	public void setDeviceNode(Node node)
+//	{
+//		deviceNode = node;
+//	}
+//				
+//	////////////////////////////////////////////////
+//	//	Initialize
+//	////////////////////////////////////////////////
+//	
+//	static 
+//	{
+//		UPnP.initialize();
+//	}
 	
 	////////////////////////////////////////////////
 	//	Constructor
@@ -202,10 +205,11 @@ public class UPNPListener extends UPnP implements org.cybergarage.http.HTTPReque
 
 	public UPNPListener(Node root, Node device)
 	{
-		rootNode = root;
-		deviceNode = device;
+		super(root, device);
+//	    rootNode = root;
+//		deviceNode = device;
 		setUUID(Config.getUUID());
-		setWirelessMode(false);
+//		setWirelessMode(false);
 	}
 
 	public UPNPListener(Node device)
@@ -223,72 +227,72 @@ public class UPNPListener extends UPnP implements org.cybergarage.http.HTTPReque
 //	{
 //		this(new File(descriptionFileName));
 //	}
-
-	////////////////////////////////////////////////
-	// Mutex
-	////////////////////////////////////////////////
-	
-	private Mutex mutex = new Mutex();
-	
-	public void lock()
-	{
-		mutex.lock();
-	}
-	
-	public void unlock()
-	{
-		mutex.unlock();
-	}
-	
-	////////////////////////////////////////////////
-	//	NMPR
-	////////////////////////////////////////////////
-	
-	public void setNMPRMode(boolean flag)
-	{
-		Node devNode = getDeviceNode();
-		if (devNode == null)
-			return;
-		if (flag == true) {
-			devNode.setNode(UPnP.INMPR03, UPnP.INMPR03_VERSION);
-			devNode.removeNode(UPNPListener.URLBASE_NAME);
-		}
-		else {
-			devNode.removeNode(UPnP.INMPR03);
-		}
-	}
-
-	public boolean isNMPRMode()
-	{
-		Node devNode = getDeviceNode();
-		if (devNode == null)
-			return false;
-		return (devNode.getNode(UPnP.INMPR03) != null) ? true : false;
-	}
-	
-	////////////////////////////////////////////////
-	//	Wireless
-	////////////////////////////////////////////////
-	
-	private boolean wirelessMode;
-	
-	public void setWirelessMode(boolean flag)
-	{
-		wirelessMode = flag;
-	}
-
-	public boolean isWirelessMode()
-	{
-		return wirelessMode;
-	}
-
-	public int getSSDPAnnounceCount()
-	{
-		if (isNMPRMode() == true && isWirelessMode() == true)
-			return UPnP.INMPR03_DISCOVERY_OVER_WIRELESS_COUNT;
-		return 1;
-	}
-
+//
+//	////////////////////////////////////////////////
+//	// Mutex
+//	////////////////////////////////////////////////
+//	
+//	private Mutex mutex = new Mutex();
+//	
+//	public void lock()
+//	{
+//		mutex.lock();
+//	}
+//	
+//	public void unlock()
+//	{
+//		mutex.unlock();
+//	}
+//	
+//	////////////////////////////////////////////////
+//	//	NMPR
+//	////////////////////////////////////////////////
+//	
+//	public void setNMPRMode(boolean flag)
+//	{
+//		Node devNode = getDeviceNode();
+//		if (devNode == null)
+//			return;
+//		if (flag == true) {
+//			devNode.setNode(UPnP.INMPR03, UPnP.INMPR03_VERSION);
+//			devNode.removeNode(UPNPListener.URLBASE_NAME);
+//		}
+//		else {
+//			devNode.removeNode(UPnP.INMPR03);
+//		}
+//	}
+//
+//	public boolean isNMPRMode()
+//	{
+//		Node devNode = getDeviceNode();
+//		if (devNode == null)
+//			return false;
+//		return (devNode.getNode(UPnP.INMPR03) != null) ? true : false;
+//	}
+//	
+//	////////////////////////////////////////////////
+//	//	Wireless
+//	////////////////////////////////////////////////
+//	
+//	private boolean wirelessMode;
+//	
+//	public void setWirelessMode(boolean flag)
+//	{
+//		wirelessMode = flag;
+//	}
+//
+//	public boolean isWirelessMode()
+//	{
+//		return wirelessMode;
+//	}
+//
+//	public int getSSDPAnnounceCount()
+//	{
+//		if (isNMPRMode() == true && isWirelessMode() == true)
+//			return UPnP.INMPR03_DISCOVERY_OVER_WIRELESS_COUNT;
+//		return 1;
+//	}
+//
 	////////////////////////////////////////////////
 	//	Device UUID
 	////////////////////////////////////////////////
@@ -305,15 +309,15 @@ public class UPNPListener extends UPnP implements org.cybergarage.http.HTTPReque
 		return devUUID;
 	}
 	
-	private void updateUDN()
-	{
-		setUDN("uuid:" + getUUID());	
-	}
-	
-	////////////////////////////////////////////////
-	//	Root Device
-	////////////////////////////////////////////////
-	
+//	private void updateUDN()
+//	{
+//		setUDN("uuid:" + getUUID());	
+//	}
+//	
+//	////////////////////////////////////////////////
+//	//	Root Device
+//	////////////////////////////////////////////////
+//	
 	public UPNPListener getRootDevice()
 	{
 		Node rootNode = getRootNode();
@@ -324,23 +328,23 @@ public class UPNPListener extends UPnP implements org.cybergarage.http.HTTPReque
 			return null;
 		return new UPNPListener(rootNode, devNode);
 	}
-
-	////////////////////////////////////////////////
-	//	Parent Device
-	////////////////////////////////////////////////
-	
-	// Thanks for Stefano Lenzi (07/24/04)
-
-	public UPNPListener getParentDevice()
-	{ 
-		if(isRootDevice())
-			return null;
-		Node devNode = getDeviceNode();
-		//<device><deviceList><device>
-		devNode = devNode.getParentNode().getParentNode();
-		return new UPNPListener(devNode);
-	}
-
+//
+//	////////////////////////////////////////////////
+//	//	Parent Device
+//	////////////////////////////////////////////////
+//	
+//	// Thanks for Stefano Lenzi (07/24/04)
+//
+//	public UPNPListener getParentDevice()
+//	{ 
+//		if(isRootDevice())
+//			return null;
+//		Node devNode = getDeviceNode();
+//		//<device><deviceList><device>
+//		devNode = devNode.getParentNode().getParentNode();
+//		return new UPNPListener(devNode);
+//	}
+//
 	////////////////////////////////////////////////
 	//	UserData
 	////////////////////////////////////////////////
@@ -365,17 +369,17 @@ public class UPNPListener extends UPnP implements org.cybergarage.http.HTTPReque
 //	{
 //		getDeviceData().setDescriptionFile(file);
 //	}
-
-	public File getDescriptionFile()
-	{
-		return getDeviceData().getDescriptionFile();
-	}
-
-	private void setDescriptionURI(String uri)
-	{
-		getDeviceData().setDescriptionURI(uri);
-	}
-
+//
+//	public File getDescriptionFile()
+//	{
+//		return getDeviceData().getDescriptionFile();
+//	}
+//
+//	private void setDescriptionURI(String uri)
+//	{
+//		getDeviceData().setDescriptionURI(uri);
+//	}
+//
 	private String getDescriptionURI()
 	{
 		return getDeviceData().getDescriptionURI();
@@ -388,7 +392,7 @@ public class UPNPListener extends UPnP implements org.cybergarage.http.HTTPReque
 			return false;
 		return descriptionURI.equals(uri);
 	}
-
+//
 //	public String getDescriptionFilePath()
 //	{
 //		File descriptionFile = getDescriptionFile();
@@ -458,359 +462,363 @@ public class UPNPListener extends UPnP implements org.cybergarage.http.HTTPReque
 //		return true;
 //	}
 
+	/**
+	 * This has been somewhat modified from the original class.
+	 * Sets the description and lease time for the device
+	 */
 	protected boolean initializeLoadedDescription()
 	{
-		setDescriptionURI(DEFAULT_DESCRIPTION_URI);
+	    getDeviceData().setDescriptionURI(DEFAULT_DESCRIPTION_URI);
 		getDeviceData().setLeaseTime(DEFAULT_LEASE_TIME);
 				
 		return true;
 	}
 	
-	////////////////////////////////////////////////
-	//	isDeviceNode
-	////////////////////////////////////////////////
-
-	public static boolean isDeviceNode(Node node)
-	{
-		return UPNPListener.ELEM_NAME.equals(node.getName());
-	}
-	
-	////////////////////////////////////////////////
-	//	Root Device
-	////////////////////////////////////////////////
-
-	public boolean isRootDevice()
-	{
-		return (getRootNode() != null) ? true : false;
-	}
-	
-	////////////////////////////////////////////////
-	//	Root Device
-	////////////////////////////////////////////////
-
-	public void setSSDPPacket(SSDPPacket packet)
-	{
-		getDeviceData().setSSDPPacket(packet);
-	}
-
-	public SSDPPacket getSSDPPacket()
-	{
-		if (isRootDevice() == false)
-			return null;
-		return getDeviceData().getSSDPPacket();
-	}
-	
-	////////////////////////////////////////////////
-	//	Location 
-	////////////////////////////////////////////////
-
-	public void setLocation(String value)
-	{
-		getDeviceData().setLocation(value);
-	}
-
-	public String getLocation()
-	{
-		SSDPPacket packet = getSSDPPacket();
-		if (packet != null)
-			return packet.getLocation();
-		return getDeviceData().getLocation();
-	}
-
-	////////////////////////////////////////////////
-	//	LeaseTime 
-	////////////////////////////////////////////////
-
-	public void setLeaseTime(int value)
-	{
-		getDeviceData().setLeaseTime(value);
-		Advertiser adv = getAdvertiser();
-		if (adv != null) {
-			announce();
-			adv.restart();
-		}
-	}
-
-	public int getLeaseTime()
-	{
-		SSDPPacket packet = getSSDPPacket();
-		if (packet != null)
-			return packet.getLeaseTime();	
-		return getDeviceData().getLeaseTime();
-	}
-
-	////////////////////////////////////////////////
-	//	TimeStamp 
-	////////////////////////////////////////////////
-
-	public long getTimeStamp()
-	{
-		SSDPPacket packet = getSSDPPacket();
-		if (packet != null)
-			return packet.getTimeStamp();		
-		return 0;
-	}
-
-	public long getElapsedTime()
-	{
-		return (System.currentTimeMillis() - getTimeStamp()) / 1000;
-	}
-
-	public boolean isExpired()
-	{
-		long elipsedTime = getElapsedTime();
-		long leaseTime = getLeaseTime() + UPnP.DEFAULT_EXPIRED_DEVICE_EXTRA_TIME;
-		if (leaseTime < elipsedTime)
-			return true;
-		return false;
-	}
-	
-	////////////////////////////////////////////////
-	//	URL Base
-	////////////////////////////////////////////////
-
-	private final static String URLBASE_NAME = "URLBase";
-	
-	private void setURLBase(String value)
-	{
-		if (isRootDevice() == true) {
-			Node node = getRootNode().getNode(URLBASE_NAME);
-			if (node != null) {
-				node.setValue(value);
-				return;
-			}
-			node = new Node(URLBASE_NAME);
-			node.setValue(value);
-			int index = 1;
-			if (getRootNode().hasNodes() == false)
-				index = 1;
-			getRootNode().insertNode(node, index);
-		}
-	}
-
-	private void updateURLBase(String host)
-	{
-		String urlBase = HostInterface.getHostURL(host, getHTTPPort(), "");
-		setURLBase(urlBase);
-	}
-  
-	public String getURLBase()
-	{
-		if (isRootDevice() == true)
-			return getRootNode().getNodeValue(URLBASE_NAME);
-		return "";
-	}
-
-	////////////////////////////////////////////////
-	//	deviceType
-	////////////////////////////////////////////////
-
-	private final static String DEVICE_TYPE = "deviceType";
-	
-	public void setDeviceType(String value)
-	{
-		getDeviceNode().setNode(DEVICE_TYPE, value);
-	}
-
-	public String getDeviceType()
-	{
-		return getDeviceNode().getNodeValue(DEVICE_TYPE);
-	}
-
-	public boolean isDeviceType(String value)
-	{
-		if (value == null)
-			return false;
-		return value.equals(getDeviceType());
-	}
-
-	////////////////////////////////////////////////
-	//	friendlyName
-	////////////////////////////////////////////////
-
-	private final static String FRIENDLY_NAME = "friendlyName";
-	
-	public void setFriendlyName(String value)
-	{
-		getDeviceNode().setNode(FRIENDLY_NAME, value);
-	}
-
-	public String getFriendlyName()
-	{
-		return getDeviceNode().getNodeValue(FRIENDLY_NAME);
-	}
-
-	////////////////////////////////////////////////
-	//	manufacture
-	////////////////////////////////////////////////
-
-	private final static String MANUFACTURE = "manufacture";
-	
-	public void setManufacture(String value)
-	{
-		getDeviceNode().setNode(MANUFACTURE, value);
-	}
-
-	public String getManufacture()
-	{
-		return getDeviceNode().getNodeValue(MANUFACTURE);
-	}
-
-	////////////////////////////////////////////////
-	//	manufactureURL
-	////////////////////////////////////////////////
-
-	private final static String MANUFACTURE_URL = "manufactureURL";
-	
-	public void setManufactureURL(String value)
-	{
-		getDeviceNode().setNode(MANUFACTURE_URL, value);
-	}
-
-	public String getManufactureURL()
-	{
-		return getDeviceNode().getNodeValue(MANUFACTURE_URL);
-	}
-
-	////////////////////////////////////////////////
-	//	modelDescription
-	////////////////////////////////////////////////
-
-	private final static String MODEL_DESCRIPTION = "modelDescription";
-	
-	public void setModelDescription(String value)
-	{
-		getDeviceNode().setNode(MODEL_DESCRIPTION, value);
-	}
-
-	public String getModelDescription()
-	{
-		return getDeviceNode().getNodeValue(MODEL_DESCRIPTION);
-	}
-
-	////////////////////////////////////////////////
-	//	modelName
-	////////////////////////////////////////////////
-
-	private final static String MODEL_NAME = "modelName";
-	
-	public void setModelName(String value)
-	{
-		getDeviceNode().setNode(MODEL_NAME, value);
-	}
-
-	public String getModelName()
-	{
-		return getDeviceNode().getNodeValue(MODEL_NAME);
-	}
-
-	////////////////////////////////////////////////
-	//	modelNumber
-	////////////////////////////////////////////////
-
-	private final static String MODEL_NUMBER = "modelNumber";
-	
-	public void setModelNumber(String value)
-	{
-		getDeviceNode().setNode(MODEL_NUMBER, value);
-	}
-
-	public String getModelNumber()
-	{
-		return getDeviceNode().getNodeValue(MODEL_NUMBER);
-	}
-
-	////////////////////////////////////////////////
-	//	modelURL
-	////////////////////////////////////////////////
-
-	private final static String MODEL_URL = "modelURL";
-	
-	public void setModelURL(String value)
-	{
-		getDeviceNode().setNode(MODEL_URL, value);
-	}
-
-	public String getModelURL()
-	{
-		return getDeviceNode().getNodeValue(MODEL_URL);
-	}
-
-	////////////////////////////////////////////////
-	//	serialNumber
-	////////////////////////////////////////////////
-
-	private final static String SERIAL_NUMBER = "serialNumber";
-	
-	public void setSerialNumber(String value)
-	{
-		getDeviceNode().setNode(SERIAL_NUMBER, value);
-	}
-
-	public String getSerialNumber()
-	{
-		return getDeviceNode().getNodeValue(SERIAL_NUMBER);
-	}
-
-	////////////////////////////////////////////////
-	//	UDN
-	////////////////////////////////////////////////
-
-	private final static String UDN = "UDN";
-	
-	public void setUDN(String value)
-	{
-		getDeviceNode().setNode(UDN, value);
-	}
-
-	public String getUDN()
-	{
-		return getDeviceNode().getNodeValue(UDN);
-	}
-
-	public boolean hasUDN()
-	{
-		String udn = getUDN();
-		if (udn == null || udn.length() <= 0)
-			return false;
-		return true;
-	}
-	
-	////////////////////////////////////////////////
-	//	UPC
-	////////////////////////////////////////////////
-
-	private final static String UPC = "UPC";
-	
-	public void setUPC(String value)
-	{
-		getDeviceNode().setNode(UPC, value);
-	}
-
-	public String getUPC()
-	{
-		return getDeviceNode().getNodeValue(UPC);
-	}
-
-	////////////////////////////////////////////////
-	//	presentationURL
-	////////////////////////////////////////////////
-
-	private final static String presentationURL = "presentationURL";
-	
-	public void setPresentationURL(String value)
-	{
-		getDeviceNode().setNode(presentationURL, value);
-	}
-
-	public String getPresentationURL()
-	{
-		return getDeviceNode().getNodeValue(presentationURL);
-	}
-
-	////////////////////////////////////////////////
-	//	deviceList
-	////////////////////////////////////////////////
+//	////////////////////////////////////////////////
+//	//	isDeviceNode
+//	////////////////////////////////////////////////
+//
+//	public static boolean isDeviceNode(Node node)
+//	{
+//		return UPNPListener.ELEM_NAME.equals(node.getName());
+//	}
+//	
+//	////////////////////////////////////////////////
+//	//	Root Device
+//	////////////////////////////////////////////////
+//
+//	public boolean isRootDevice()
+//	{
+//		return (getRootNode() != null) ? true : false;
+//	}
+//	
+//	////////////////////////////////////////////////
+//	//	Root Device
+//	////////////////////////////////////////////////
+//
+//	public void setSSDPPacket(SSDPPacket packet)
+//	{
+//		getDeviceData().setSSDPPacket(packet);
+//	}
+//
+//	public SSDPPacket getSSDPPacket()
+//	{
+//		if (isRootDevice() == false)
+//			return null;
+//		return getDeviceData().getSSDPPacket();
+//	}
+//	
+//	////////////////////////////////////////////////
+//	//	Location 
+//	////////////////////////////////////////////////
+//
+//	public void setLocation(String value)
+//	{
+//		getDeviceData().setLocation(value);
+//	}
+//
+//	public String getLocation()
+//	{
+//		SSDPPacket packet = getSSDPPacket();
+//		if (packet != null)
+//			return packet.getLocation();
+//		return getDeviceData().getLocation();
+//	}
+//
+//	////////////////////////////////////////////////
+//	//	LeaseTime 
+//	////////////////////////////////////////////////
+//
+//	public void setLeaseTime(int value)
+//	{
+//		getDeviceData().setLeaseTime(value);
+//		Advertiser adv = getAdvertiser();
+//		if (adv != null) {
+//			announce();
+//			adv.restart();
+//		}
+//	}
+//
+//	public int getLeaseTime()
+//	{
+//		SSDPPacket packet = getSSDPPacket();
+//		if (packet != null)
+//			return packet.getLeaseTime();	
+//		return getDeviceData().getLeaseTime();
+//	}
+//
+//	////////////////////////////////////////////////
+//	//	TimeStamp 
+//	////////////////////////////////////////////////
+//
+//	public long getTimeStamp()
+//	{
+//		SSDPPacket packet = getSSDPPacket();
+//		if (packet != null)
+//			return packet.getTimeStamp();		
+//		return 0;
+//	}
+//
+//	public long getElapsedTime()
+//	{
+//		return (System.currentTimeMillis() - getTimeStamp()) / 1000;
+//	}
+//
+//	public boolean isExpired()
+//	{
+//		long elipsedTime = getElapsedTime();
+//		long leaseTime = getLeaseTime() + UPnP.DEFAULT_EXPIRED_DEVICE_EXTRA_TIME;
+//		if (leaseTime < elipsedTime)
+//			return true;
+//		return false;
+//	}
+//	
+//	////////////////////////////////////////////////
+//	//	URL Base
+//	////////////////////////////////////////////////
+//
+//	private final static String URLBASE_NAME = "URLBase";
+//	
+//	private void setURLBase(String value)
+//	{
+//		if (isRootDevice() == true) {
+//			Node node = getRootNode().getNode(URLBASE_NAME);
+//			if (node != null) {
+//				node.setValue(value);
+//				return;
+//			}
+//			node = new Node(URLBASE_NAME);
+//			node.setValue(value);
+//			int index = 1;
+//			if (getRootNode().hasNodes() == false)
+//				index = 1;
+//			getRootNode().insertNode(node, index);
+//		}
+//	}
+//
+//	private void updateURLBase(String host)
+//	{
+//		String urlBase = HostInterface.getHostURL(host, getHTTPPort(), "");
+//		setURLBase(urlBase);
+//	}
+//  
+//	public String getURLBase()
+//	{
+//		if (isRootDevice() == true)
+//			return getRootNode().getNodeValue(URLBASE_NAME);
+//		return "";
+//	}
+//
+//	////////////////////////////////////////////////
+//	//	deviceType
+//	////////////////////////////////////////////////
+//
+//	private final static String DEVICE_TYPE = "deviceType";
+//	
+//	public void setDeviceType(String value)
+//	{
+//		getDeviceNode().setNode(DEVICE_TYPE, value);
+//	}
+//
+//	public String getDeviceType()
+//	{
+//		return getDeviceNode().getNodeValue(DEVICE_TYPE);
+//	}
+//
+//	public boolean isDeviceType(String value)
+//	{
+//		if (value == null)
+//			return false;
+//		return value.equals(getDeviceType());
+//	}
+//
+//	////////////////////////////////////////////////
+//	//	friendlyName
+//	////////////////////////////////////////////////
+//
+//	private final static String FRIENDLY_NAME = "friendlyName";
+//	
+//	public void setFriendlyName(String value)
+//	{
+//		getDeviceNode().setNode(FRIENDLY_NAME, value);
+//	}
+//
+//	public String getFriendlyName()
+//	{
+//		return getDeviceNode().getNodeValue(FRIENDLY_NAME);
+//	}
+//
+//	////////////////////////////////////////////////
+//	//	manufacture
+//	////////////////////////////////////////////////
+//
+//	private final static String MANUFACTURE = "manufacture";
+//	
+//	public void setManufacture(String value)
+//	{
+//		getDeviceNode().setNode(MANUFACTURE, value);
+//	}
+//
+//	public String getManufacture()
+//	{
+//		return getDeviceNode().getNodeValue(MANUFACTURE);
+//	}
+//
+//	////////////////////////////////////////////////
+//	//	manufactureURL
+//	////////////////////////////////////////////////
+//
+//	private final static String MANUFACTURE_URL = "manufactureURL";
+//	
+//	public void setManufactureURL(String value)
+//	{
+//		getDeviceNode().setNode(MANUFACTURE_URL, value);
+//	}
+//
+//	public String getManufactureURL()
+//	{
+//		return getDeviceNode().getNodeValue(MANUFACTURE_URL);
+//	}
+//
+//	////////////////////////////////////////////////
+//	//	modelDescription
+//	////////////////////////////////////////////////
+//
+//	private final static String MODEL_DESCRIPTION = "modelDescription";
+//	
+//	public void setModelDescription(String value)
+//	{
+//		getDeviceNode().setNode(MODEL_DESCRIPTION, value);
+//	}
+//
+//	public String getModelDescription()
+//	{
+//		return getDeviceNode().getNodeValue(MODEL_DESCRIPTION);
+//	}
+//
+//	////////////////////////////////////////////////
+//	//	modelName
+//	////////////////////////////////////////////////
+//
+//	private final static String MODEL_NAME = "modelName";
+//	
+//	public void setModelName(String value)
+//	{
+//		getDeviceNode().setNode(MODEL_NAME, value);
+//	}
+//
+//	public String getModelName()
+//	{
+//		return getDeviceNode().getNodeValue(MODEL_NAME);
+//	}
+//
+//	////////////////////////////////////////////////
+//	//	modelNumber
+//	////////////////////////////////////////////////
+//
+//	private final static String MODEL_NUMBER = "modelNumber";
+//	
+//	public void setModelNumber(String value)
+//	{
+//		getDeviceNode().setNode(MODEL_NUMBER, value);
+//	}
+//
+//	public String getModelNumber()
+//	{
+//		return getDeviceNode().getNodeValue(MODEL_NUMBER);
+//	}
+//
+//	////////////////////////////////////////////////
+//	//	modelURL
+//	////////////////////////////////////////////////
+//
+//	private final static String MODEL_URL = "modelURL";
+//	
+//	public void setModelURL(String value)
+//	{
+//		getDeviceNode().setNode(MODEL_URL, value);
+//	}
+//
+//	public String getModelURL()
+//	{
+//		return getDeviceNode().getNodeValue(MODEL_URL);
+//	}
+//
+//	////////////////////////////////////////////////
+//	//	serialNumber
+//	////////////////////////////////////////////////
+//
+//	private final static String SERIAL_NUMBER = "serialNumber";
+//	
+//	public void setSerialNumber(String value)
+//	{
+//		getDeviceNode().setNode(SERIAL_NUMBER, value);
+//	}
+//
+//	public String getSerialNumber()
+//	{
+//		return getDeviceNode().getNodeValue(SERIAL_NUMBER);
+//	}
+//
+//	////////////////////////////////////////////////
+//	//	UDN
+//	////////////////////////////////////////////////
+//
+//	private final static String UDN = "UDN";
+//	
+//	public void setUDN(String value)
+//	{
+//		getDeviceNode().setNode(UDN, value);
+//	}
+//
+//	public String getUDN()
+//	{
+//		return getDeviceNode().getNodeValue(UDN);
+//	}
+//
+//	public boolean hasUDN()
+//	{
+//		String udn = getUDN();
+//		if (udn == null || udn.length() <= 0)
+//			return false;
+//		return true;
+//	}
+//	
+//	////////////////////////////////////////////////
+//	//	UPC
+//	////////////////////////////////////////////////
+//
+//	private final static String UPC = "UPC";
+//	
+//	public void setUPC(String value)
+//	{
+//		getDeviceNode().setNode(UPC, value);
+//	}
+//
+//	public String getUPC()
+//	{
+//		return getDeviceNode().getNodeValue(UPC);
+//	}
+//
+//	////////////////////////////////////////////////
+//	//	presentationURL
+//	////////////////////////////////////////////////
+//
+//	private final static String presentationURL = "presentationURL";
+//	
+//	public void setPresentationURL(String value)
+//	{
+//		getDeviceNode().setNode(presentationURL, value);
+//	}
+//
+//	public String getPresentationURL()
+//	{
+//		return getDeviceNode().getNodeValue(presentationURL);
+//	}
+//
+//	////////////////////////////////////////////////
+//	//	deviceList
+//	////////////////////////////////////////////////
 
 //	public DeviceList getDeviceList()
 //	{
@@ -828,48 +836,52 @@ public class UPNPListener extends UPnP implements org.cybergarage.http.HTTPReque
 //		} 
 //		return devList;
 //	}
+//
+//	public boolean isDevice(String name)
+//	{
+//		if (name == null)
+//			return false;
+//		if (name.endsWith(getUDN()) == true)
+//			return true;
+//		if (name.equals(getFriendlyName()) == true)
+//			return true;
+//		if (name.endsWith(getDeviceType()) == true)
+//			return true;
+//		return false;
+//	}
+//	
+//	
+//	////////////////////////////////////////////////
+//	//	serviceList
+//	////////////////////////////////////////////////
+//
+//	public ServiceList getServiceList()
+//	{
+//		ServiceList serviceList = new ServiceList();
+//		Node serviceListNode = getDeviceNode().getNode(ServiceList.ELEM_NAME);
+//		if (serviceListNode == null)
+//			return serviceList;
+//		int nNode = serviceListNode.getNNodes();
+//		for (int n=0; n<nNode; n++) {
+//			Node node = serviceListNode.getNode(n);
+//			if (Service.isServiceNode(node) == false)
+//				continue;
+//			Service service = new Service(node);
+//			serviceList.add(service);
+//		} 
+//		return serviceList;
+//	}
 
-	public boolean isDevice(String name)
-	{
-		if (name == null)
-			return false;
-		if (name.endsWith(getUDN()) == true)
-			return true;
-		if (name.equals(getFriendlyName()) == true)
-			return true;
-		if (name.endsWith(getDeviceType()) == true)
-			return true;
-		return false;
-	}
-	
-	
-	////////////////////////////////////////////////
-	//	serviceList
-	////////////////////////////////////////////////
-
-	public ServiceList getServiceList()
-	{
-		ServiceList serviceList = new ServiceList();
-		Node serviceListNode = getDeviceNode().getNode(ServiceList.ELEM_NAME);
-		if (serviceListNode == null)
-			return serviceList;
-		int nNode = serviceListNode.getNNodes();
-		for (int n=0; n<nNode; n++) {
-			Node node = serviceListNode.getNode(n);
-			if (Service.isServiceNode(node) == false)
-				continue;
-			Service service = new Service(node);
-			serviceList.add(service);
-		} 
-		return serviceList;
-	}
-
+	/**
+	 * This has been modified from the original...
+	 * there is no ... device list..
+	 */
 	public Service getService(String name)
 	{
 		ServiceList serviceList = getServiceList();
 		int serviceCnt = serviceList.size();
 		for (int n=0; n<serviceCnt; n++) {
-			Service service = serviceList.getService(n);
+		    Service service =serviceList.getService(n);
 			if (service.isService(name) == true)
 				return service;
 		}
@@ -879,6 +891,10 @@ public class UPNPListener extends UPnP implements org.cybergarage.http.HTTPReque
 		return null;
 	}
 
+   /**
+     * This has been modified from the original...
+     * there is no ... device list..
+     */
 	public Service getServiceBySCPDURL(String searchUrl)
 	{
 		ServiceList serviceList = getServiceList();
@@ -893,6 +909,10 @@ public class UPNPListener extends UPnP implements org.cybergarage.http.HTTPReque
 		return null;
 	}
 
+   /**
+     * This has been modified from the original...
+     * there is no ... device list..
+     */
 	public Service getServiceByControlURL(String searchUrl)
 	{
 		ServiceList serviceList = getServiceList();
@@ -907,6 +927,10 @@ public class UPNPListener extends UPnP implements org.cybergarage.http.HTTPReque
 		return null;
 	}
 
+   /**
+     * This has been modified from the original...
+     * there is no ... device list..
+     */
 	public Service getServiceByEventSubURL(String searchUrl)
 	{
 		ServiceList serviceList = getServiceList();
@@ -920,7 +944,11 @@ public class UPNPListener extends UPnP implements org.cybergarage.http.HTTPReque
 
 		return null;
 	}
-
+	
+    /**
+     * This has been modified from the original...
+     * there is no ... device list..
+     */
 	public Service getSubscriberService(String uuid)
 	{
 		ServiceList serviceList = getServiceList();
@@ -941,6 +969,10 @@ public class UPNPListener extends UPnP implements org.cybergarage.http.HTTPReque
 	//	StateVariable
 	////////////////////////////////////////////////
 
+   /**
+     * This has been modified from the original...
+     * there is no ... device list..
+     */
 	public StateVariable getStateVariable(String serviceType, String name)
 	{
 		if (serviceType == null && name == null)
@@ -964,16 +996,20 @@ public class UPNPListener extends UPnP implements org.cybergarage.http.HTTPReque
 		
 		return null;
 	}
-
-	public StateVariable getStateVariable(String name)
-	{
-		return getStateVariable(null, name);
-	}
-	
+//
+//	public StateVariable getStateVariable(String name)
+//	{
+//		return getStateVariable(null, name);
+//	}
+//	
 	////////////////////////////////////////////////
 	//	Action
 	////////////////////////////////////////////////
 
+	/**
+     * This has been modified from the original...
+     * there is no ... device list..
+     */
 	public Action getAction(String name)
 	{
 		ServiceList serviceList = getServiceList();
@@ -1001,47 +1037,47 @@ public class UPNPListener extends UPnP implements org.cybergarage.http.HTTPReque
 	//	iconList
 	////////////////////////////////////////////////
 
-	public IconList getIconList()
-	{
-		IconList iconList = new IconList();
-		Node iconListNode = getDeviceNode().getNode(IconList.ELEM_NAME);
-		if (iconListNode == null)
-			return iconList;
-		int nNode = iconListNode.getNNodes();
-		for (int n=0; n<nNode; n++) {
-			Node node = iconListNode.getNode(n);
-			if (Icon.isIconNode(node) == false)
-				continue;
-			Icon icon = new Icon(node);
-			iconList.add(icon);
-		} 
-		return iconList;
-	}
-	
-	public Icon getIcon(int n)
-	{
-		IconList iconList = getIconList();
-		if (n < 0 && (iconList.size()-1) < n)
-			return null;
-		return iconList.getIcon(n);
-	}
-
-	////////////////////////////////////////////////
-	//	Notify
-	////////////////////////////////////////////////
-
-	public String getLocationURL(String host)
-	{
-		return HostInterface.getHostURL(host, getHTTPPort(), getDescriptionURI());
-		
-	}
-
-	public String getLocationURL(String host, String location)
-    {
-        return HostInterface.getHostURL(host, getHTTPPort(), location);
-        
-    }
-	
+//	public IconList getIconList()
+//	{
+//		IconList iconList = new IconList();
+//		Node iconListNode = getDeviceNode().getNode(IconList.ELEM_NAME);
+//		if (iconListNode == null)
+//			return iconList;
+//		int nNode = iconListNode.getNNodes();
+//		for (int n=0; n<nNode; n++) {
+//			Node node = iconListNode.getNode(n);
+//			if (Icon.isIconNode(node) == false)
+//				continue;
+//			Icon icon = new Icon(node);
+//			iconList.add(icon);
+//		} 
+//		return iconList;
+//	}
+//	
+//	public Icon getIcon(int n)
+//	{
+//		IconList iconList = getIconList();
+//		if (n < 0 && (iconList.size()-1) < n)
+//			return null;
+//		return iconList.getIcon(n);
+//	}
+//
+//	////////////////////////////////////////////////
+//	//	Notify
+//	////////////////////////////////////////////////
+//
+//	public String getLocationURL(String host)
+//	{
+//		return HostInterface.getHostURL(host, getHTTPPort(), getDescriptionURI());
+//		
+//	}
+//
+//	public String getLocationURL(String host, String location)
+//    {
+//        return HostInterface.getHostURL(host, getHTTPPort(), location);
+//        
+//    }
+//	
 	private String getNotifyDeviceNT()
 	{
 		if (isRootDevice() == false)
@@ -1065,12 +1101,17 @@ public class UPNPListener extends UPnP implements org.cybergarage.http.HTTPReque
 	{
 		return getUDN() + "::" + getDeviceType();
 	}
+//	
+//	public final static void notifyWait()
+//	{
+//		TimerUtil.waitRandom(DEFAULT_DISCOVERY_WAIT_TIME);
+//	}
+//		
 	
-	public final static void notifyWait()
-	{
-		TimerUtil.waitRandom(DEFAULT_DISCOVERY_WAIT_TIME);
-	}
-		
+   /**
+     * This has been modified from the original...
+     * there is no ... device list..
+     */
 	public void announce(String bindAddr)
 	{
 		String devLocation = getLocationURL(bindAddr);
@@ -1112,21 +1153,25 @@ public class UPNPListener extends UPnP implements org.cybergarage.http.HTTPReque
 
 	}
 
-	public void announce()
-	{
-		notifyWait();
-		
-		int nHostAddrs = HostInterface.getNHostAddresses();
-		for (int n=0; n<nHostAddrs; n++) {
-			String bindAddr = HostInterface.getHostAddress(n);
-			if (bindAddr == null || bindAddr.length() <= 0)
-				continue;
-			int ssdpCount = getSSDPAnnounceCount();
-			for (int i=0; i<ssdpCount; i++)
-				announce(bindAddr);
-		}
-	}
+//	public void announce()
+//	{
+//		notifyWait();
+//		
+//		int nHostAddrs = HostInterface.getNHostAddresses();
+//		for (int n=0; n<nHostAddrs; n++) {
+//			String bindAddr = HostInterface.getHostAddress(n);
+//			if (bindAddr == null || bindAddr.length() <= 0)
+//				continue;
+//			int ssdpCount = getSSDPAnnounceCount();
+//			for (int i=0; i<ssdpCount; i++)
+//				announce(bindAddr);
+//		}
+//	}
 	
+   /**
+     * This has been modified from the original...
+     * there is no ... device list..
+     */
 	public void byebye(String bindAddr)
 	{
 		SSDPNotifySocket ssdpSock = new SSDPNotifySocket(bindAddr);
@@ -1163,18 +1208,18 @@ public class UPNPListener extends UPnP implements org.cybergarage.http.HTTPReque
 
 	}
 
-	public void byebye()
-	{
-		int nHostAddrs = HostInterface.getNHostAddresses();
-		for (int n=0; n<nHostAddrs; n++) {
-			String bindAddr = HostInterface.getHostAddress(n);
-			if (bindAddr == null || bindAddr.length() <= 0)
-				continue;
-			int ssdpCount = getSSDPAnnounceCount();
-			for (int i=0; i<ssdpCount; i++)
-				byebye(bindAddr);
-		}
-	}
+//	public void byebye()
+//	{
+//		int nHostAddrs = HostInterface.getNHostAddresses();
+//		for (int n=0; n<nHostAddrs; n++) {
+//			String bindAddr = HostInterface.getHostAddress(n);
+//			if (bindAddr == null || bindAddr.length() <= 0)
+//				continue;
+//			int ssdpCount = getSSDPAnnounceCount();
+//			for (int i=0; i<ssdpCount; i++)
+//				byebye(bindAddr);
+//		}
+//	}
 
 	////////////////////////////////////////////////
 	//	Search
@@ -1265,45 +1310,45 @@ public class UPNPListener extends UPnP implements org.cybergarage.http.HTTPReque
 		deviceSearchResponse(ssdpPacket);
 	}
 	
-	////////////////////////////////////////////////
-	//	HTTP Server	
-	////////////////////////////////////////////////
-
-	public void setHTTPPort(int port)
-	{
-		getDeviceData().setHTTPPort(port);
-	}
-	
-	public int getHTTPPort()
-	{
-		return getDeviceData().getHTTPPort();
-	}
-
-	public void httpRequestRecieved(HTTPRequest httpReq)
-	{
-		Config.out("UPNP LISTENER HTTP GET" + httpReq);
-	    if (Debug.isOn() == true)
-			httpReq.print();
-	
-		if (httpReq.isGetRequest() == true) {
-			System.out.println("Get request received");
-			httpGetRequestRecieved(httpReq);
-			return;
-		}
-		if (httpReq.isPostRequest() == true) {
-			httpPostRequestRecieved(httpReq);
-			return;
-		}
-
-		if (httpReq.isSubscribeRequest() == true || httpReq.isUnsubscribeRequest() == true) {
-			SubscriptionRequest subReq = new SubscriptionRequest(httpReq);
-			deviceEventSubscriptionRecieved(subReq);
-			return;
-		}
-
-		httpReq.returnBadRequest();
-	}
-
+//	////////////////////////////////////////////////
+//	//	HTTP Server	
+//	////////////////////////////////////////////////
+//
+//	public void setHTTPPort(int port)
+//	{
+//		getDeviceData().setHTTPPort(port);
+//	}
+//	
+//	public int getHTTPPort()
+//	{
+//		return getDeviceData().getHTTPPort();
+//	}
+//
+//	public void httpRequestRecieved(HTTPRequest httpReq)
+//	{
+//		Config.out("UPNP LISTENER HTTP GET" + httpReq);
+//	    if (Debug.isOn() == true)
+//			httpReq.print();
+//	
+//		if (httpReq.isGetRequest() == true) {
+//			System.out.println("Get request received");
+//			httpGetRequestRecieved(httpReq);
+//			return;
+//		}
+//		if (httpReq.isPostRequest() == true) {
+//			httpPostRequestRecieved(httpReq);
+//			return;
+//		}
+//
+//		if (httpReq.isSubscribeRequest() == true || httpReq.isUnsubscribeRequest() == true) {
+//			SubscriptionRequest subReq = new SubscriptionRequest(httpReq);
+//			deviceEventSubscriptionRecieved(subReq);
+//			return;
+//		}
+//
+//		httpReq.returnBadRequest();
+//	}
+//
 	private synchronized byte[] getDescriptionData(String host)
 	{
 		//Changed by tom
@@ -1355,223 +1400,223 @@ public class UPNPListener extends UPnP implements org.cybergarage.http.HTTPReque
 		httpReq.post(httpRes);
 	}
 
-	private void httpPostRequestRecieved(HTTPRequest httpReq)
-	{
-		if (httpReq.isSOAPAction() == true) {
-			//SOAPRequest soapReq = new SOAPRequest(httpReq);
-			soapActionRecieved(httpReq);
-			return;
-		}
-		httpReq.returnBadRequest();
-	}
-
-	////////////////////////////////////////////////
-	//	SOAP
-	////////////////////////////////////////////////
-
-	private void soapBadActionRecieved(HTTPRequest soapReq)
-	{
-		SOAPResponse soapRes = new SOAPResponse();
-		soapRes.setStatusCode(HTTPStatus.BAD_REQUEST);
-		soapReq.post(soapRes);
-	}
-
-	private void soapActionRecieved(HTTPRequest soapReq)
-	{
-		Config.out("SOAP ACTION RECIEVED");
-	    String uri = soapReq.getURI();
-		Service ctlService = getServiceByControlURL(uri);
-		if (ctlService != null)  {
-			ActionRequest crlReq = new ActionRequest(soapReq);
-			deviceControlRequestRecieved(crlReq, ctlService);
-			return;
-		}
-		soapBadActionRecieved(soapReq);
-	}
-
-	////////////////////////////////////////////////
-	//	controlAction
-	////////////////////////////////////////////////
-
-	private void deviceControlRequestRecieved(ControlRequest ctlReq, Service service)
-	{
-		if (ctlReq.isQueryControl() == true)
-			deviceQueryControlRecieved(new QueryRequest(ctlReq), service);
-		else
-			deviceActionControlRecieved(new ActionRequest(ctlReq), service);
-	}
-
-	private void invalidActionControlRecieved(ControlRequest ctlReq)
-	{
-		ControlResponse actRes = new ActionResponse();
-		actRes.setFaultResponse(UPnPStatus.INVALID_ACTION);
-		ctlReq.post(actRes);
-	}
-
-	private void deviceActionControlRecieved(ActionRequest ctlReq, Service service)
-	{
-		if (Debug.isOn() == true)
-			ctlReq.print();
-			
-		String actionName = ctlReq.getActionName();
-		Action action = service.getAction(actionName);
-		if (action == null) {
-			invalidActionControlRecieved(ctlReq);
-			return;
-		}
-		ArgumentList actionArgList = action.getArgumentList();
-		ArgumentList reqArgList = ctlReq.getArgumentList();
-		actionArgList.set(reqArgList);
-		if (action.performActionListener(ctlReq) == false)
-			invalidActionControlRecieved(ctlReq);
-	}
-
-	private void deviceQueryControlRecieved(QueryRequest ctlReq, Service service)
-	{
-		if (Debug.isOn() == true)
-			ctlReq.print();
-		String varName = ctlReq.getVarName();
-		if (service.hasStateVariable(varName) == false) {
-			invalidActionControlRecieved(ctlReq);
-			return;
-		}
-		StateVariable stateVar = getStateVariable(varName);
-		if (stateVar.performQueryListener(ctlReq) == false)
-			invalidActionControlRecieved(ctlReq);
-	}
-
-	////////////////////////////////////////////////
-	//	eventSubscribe
-	////////////////////////////////////////////////
-
-	private void upnpBadSubscriptionRecieved(SubscriptionRequest subReq, int code)
-	{
-		SubscriptionResponse subRes = new SubscriptionResponse();
-		subRes.setErrorResponse(code);
-		subReq.post(subRes);
-	}
-
-	private void deviceEventSubscriptionRecieved(SubscriptionRequest subReq)
-	{
-		String uri = subReq.getURI();
-		Service service = getServiceByEventSubURL(uri);
-		if (service == null) {
-			subReq.returnBadRequest();
-			return;
-		}
-		if (subReq.hasCallback() == false && subReq.hasSID() == false) {
-			upnpBadSubscriptionRecieved(subReq, HTTPStatus.PRECONDITION_FAILED);
-			return;
-		}
-
-		// UNSUBSCRIBE
-		if (subReq.isUnsubscribeRequest() == true) {
-			deviceEventUnsubscriptionRecieved(service, subReq);
-			return;
-		}
-
-		// SUBSCRIBE (NEW)
-		if (subReq.hasCallback() == true) {
-			deviceEventNewSubscriptionRecieved(service, subReq);
-			return;
-		}
-		
-		// SUBSCRIBE (RENEW)
-		if (subReq.hasSID() == true) {
-			deviceEventRenewSubscriptionRecieved(service, subReq);
-			return;
-		}
-		
-		upnpBadSubscriptionRecieved(subReq, HTTPStatus.PRECONDITION_FAILED);
-	}
-
-	private void deviceEventNewSubscriptionRecieved(Service service, SubscriptionRequest subReq)
-	{
-		String callback = subReq.getCallback();
-		try {
-			URL url = new URL(callback);
-		}
-		catch (Exception e) {
-			upnpBadSubscriptionRecieved(subReq, HTTPStatus.PRECONDITION_FAILED);
-			return;
-		}
-
-		long timeOut = subReq.getTimeout();
-		String sid = Subscription.createSID();
-			
-		Subscriber sub = new Subscriber();
-		sub.setDeliveryURL(callback);
-		sub.setTimeOut(timeOut);
-		sub.setSID(sid);
-		service.addSubscriber(sub);
-			
-		SubscriptionResponse subRes = new SubscriptionResponse();
-		subRes.setStatusCode(HTTPStatus.OK);
-		subRes.setSID(sid);
-		subRes.setTimeout(timeOut);
-		if (Debug.isOn() == true)
-			subRes.print();
-		subReq.post(subRes);
-
-		if (Debug.isOn() == true)
-			subRes.print();
-		
-		service.notifyAllStateVariables();
-	}
-
-	private void deviceEventRenewSubscriptionRecieved(Service service, SubscriptionRequest subReq)
-	{
-		String sid = subReq.getSID();
-		Subscriber sub = service.getSubscriber(sid);
-
-		if (sub == null) {
-			upnpBadSubscriptionRecieved(subReq, HTTPStatus.PRECONDITION_FAILED);
-			return;
-		}
-
-		long timeOut = subReq.getTimeout();
-		sub.setTimeOut(timeOut);
-		sub.renew();
-				
-		SubscriptionResponse subRes = new SubscriptionResponse();
-		subRes.setStatusCode(HTTPStatus.OK);
-		subRes.setSID(sid);
-		subRes.setTimeout(timeOut);
-		subReq.post(subRes);
-		
-		if (Debug.isOn() == true)
-			subRes.print();
-	}		
-
-	private void deviceEventUnsubscriptionRecieved(Service service, SubscriptionRequest subReq)
-	{
-		String sid = subReq.getSID();
-		Subscriber sub = service.getSubscriber(sid);
-
-		if (sub == null) {
-			upnpBadSubscriptionRecieved(subReq, HTTPStatus.PRECONDITION_FAILED);
-			return;
-		}
-
-		service.removeSubscriber(sub);
-						
-		SubscriptionResponse subRes = new SubscriptionResponse();
-		subRes.setStatusCode(HTTPStatus.OK);
-		subReq.post(subRes);
-		
-		if (Debug.isOn() == true)
-			subRes.print();
-	}		
+//	private void httpPostRequestRecieved(HTTPRequest httpReq)
+//	{
+//		if (httpReq.isSOAPAction() == true) {
+//			//SOAPRequest soapReq = new SOAPRequest(httpReq);
+//			soapActionRecieved(httpReq);
+//			return;
+//		}
+//		httpReq.returnBadRequest();
+//	}
+//
+//	////////////////////////////////////////////////
+//	//	SOAP
+//	////////////////////////////////////////////////
+//
+//	private void soapBadActionRecieved(HTTPRequest soapReq)
+//	{
+//		SOAPResponse soapRes = new SOAPResponse();
+//		soapRes.setStatusCode(HTTPStatus.BAD_REQUEST);
+//		soapReq.post(soapRes);
+//	}
+//
+//	private void soapActionRecieved(HTTPRequest soapReq)
+//	{
+//		Config.out("SOAP ACTION RECIEVED");
+//	    String uri = soapReq.getURI();
+//		Service ctlService = getServiceByControlURL(uri);
+//		if (ctlService != null)  {
+//			ActionRequest crlReq = new ActionRequest(soapReq);
+//			deviceControlRequestRecieved(crlReq, ctlService);
+//			return;
+//		}
+//		soapBadActionRecieved(soapReq);
+//	}
+//
+//	////////////////////////////////////////////////
+//	//	controlAction
+//	////////////////////////////////////////////////
+//
+//	private void deviceControlRequestRecieved(ControlRequest ctlReq, Service service)
+//	{
+//		if (ctlReq.isQueryControl() == true)
+//			deviceQueryControlRecieved(new QueryRequest(ctlReq), service);
+//		else
+//			deviceActionControlRecieved(new ActionRequest(ctlReq), service);
+//	}
+//
+//	private void invalidActionControlRecieved(ControlRequest ctlReq)
+//	{
+//		ControlResponse actRes = new ActionResponse();
+//		actRes.setFaultResponse(UPnPStatus.INVALID_ACTION);
+//		ctlReq.post(actRes);
+//	}
+//
+//	private void deviceActionControlRecieved(ActionRequest ctlReq, Service service)
+//	{
+//		if (Debug.isOn() == true)
+//			ctlReq.print();
+//			
+//		String actionName = ctlReq.getActionName();
+//		Action action = service.getAction(actionName);
+//		if (action == null) {
+//			invalidActionControlRecieved(ctlReq);
+//			return;
+//		}
+//		ArgumentList actionArgList = action.getArgumentList();
+//		ArgumentList reqArgList = ctlReq.getArgumentList();
+//		actionArgList.set(reqArgList);
+//		if (action.performActionListener(ctlReq) == false)
+//			invalidActionControlRecieved(ctlReq);
+//	}
+//
+//	private void deviceQueryControlRecieved(QueryRequest ctlReq, Service service)
+//	{
+//		if (Debug.isOn() == true)
+//			ctlReq.print();
+//		String varName = ctlReq.getVarName();
+//		if (service.hasStateVariable(varName) == false) {
+//			invalidActionControlRecieved(ctlReq);
+//			return;
+//		}
+//		StateVariable stateVar = getStateVariable(varName);
+//		if (stateVar.performQueryListener(ctlReq) == false)
+//			invalidActionControlRecieved(ctlReq);
+//	}
+//
+//	////////////////////////////////////////////////
+//	//	eventSubscribe
+//	////////////////////////////////////////////////
+//
+//	private void upnpBadSubscriptionRecieved(SubscriptionRequest subReq, int code)
+//	{
+//		SubscriptionResponse subRes = new SubscriptionResponse();
+//		subRes.setErrorResponse(code);
+//		subReq.post(subRes);
+//	}
+//
+//	private void deviceEventSubscriptionRecieved(SubscriptionRequest subReq)
+//	{
+//		String uri = subReq.getURI();
+//		Service service = getServiceByEventSubURL(uri);
+//		if (service == null) {
+//			subReq.returnBadRequest();
+//			return;
+//		}
+//		if (subReq.hasCallback() == false && subReq.hasSID() == false) {
+//			upnpBadSubscriptionRecieved(subReq, HTTPStatus.PRECONDITION_FAILED);
+//			return;
+//		}
+//
+//		// UNSUBSCRIBE
+//		if (subReq.isUnsubscribeRequest() == true) {
+//			deviceEventUnsubscriptionRecieved(service, subReq);
+//			return;
+//		}
+//
+//		// SUBSCRIBE (NEW)
+//		if (subReq.hasCallback() == true) {
+//			deviceEventNewSubscriptionRecieved(service, subReq);
+//			return;
+//		}
+//		
+//		// SUBSCRIBE (RENEW)
+//		if (subReq.hasSID() == true) {
+//			deviceEventRenewSubscriptionRecieved(service, subReq);
+//			return;
+//		}
+//		
+//		upnpBadSubscriptionRecieved(subReq, HTTPStatus.PRECONDITION_FAILED);
+//	}
+//
+//	private void deviceEventNewSubscriptionRecieved(Service service, SubscriptionRequest subReq)
+//	{
+//		String callback = subReq.getCallback();
+//		try {
+//			URL url = new URL(callback);
+//		}
+//		catch (Exception e) {
+//			upnpBadSubscriptionRecieved(subReq, HTTPStatus.PRECONDITION_FAILED);
+//			return;
+//		}
+//
+//		long timeOut = subReq.getTimeout();
+//		String sid = Subscription.createSID();
+//			
+//		Subscriber sub = new Subscriber();
+//		sub.setDeliveryURL(callback);
+//		sub.setTimeOut(timeOut);
+//		sub.setSID(sid);
+//		service.addSubscriber(sub);
+//			
+//		SubscriptionResponse subRes = new SubscriptionResponse();
+//		subRes.setStatusCode(HTTPStatus.OK);
+//		subRes.setSID(sid);
+//		subRes.setTimeout(timeOut);
+//		if (Debug.isOn() == true)
+//			subRes.print();
+//		subReq.post(subRes);
+//
+//		if (Debug.isOn() == true)
+//			subRes.print();
+//		
+//		service.notifyAllStateVariables();
+//	}
+//
+//	private void deviceEventRenewSubscriptionRecieved(Service service, SubscriptionRequest subReq)
+//	{
+//		String sid = subReq.getSID();
+//		Subscriber sub = service.getSubscriber(sid);
+//
+//		if (sub == null) {
+//			upnpBadSubscriptionRecieved(subReq, HTTPStatus.PRECONDITION_FAILED);
+//			return;
+//		}
+//
+//		long timeOut = subReq.getTimeout();
+//		sub.setTimeOut(timeOut);
+//		sub.renew();
+//				
+//		SubscriptionResponse subRes = new SubscriptionResponse();
+//		subRes.setStatusCode(HTTPStatus.OK);
+//		subRes.setSID(sid);
+//		subRes.setTimeout(timeOut);
+//		subReq.post(subRes);
+//		
+//		if (Debug.isOn() == true)
+//			subRes.print();
+//	}		
+//
+//	private void deviceEventUnsubscriptionRecieved(Service service, SubscriptionRequest subReq)
+//	{
+//		String sid = subReq.getSID();
+//		Subscriber sub = service.getSubscriber(sid);
+//
+//		if (sub == null) {
+//			upnpBadSubscriptionRecieved(subReq, HTTPStatus.PRECONDITION_FAILED);
+//			return;
+//		}
+//
+//		service.removeSubscriber(sub);
+//						
+//		SubscriptionResponse subRes = new SubscriptionResponse();
+//		subRes.setStatusCode(HTTPStatus.OK);
+//		subReq.post(subRes);
+//		
+//		if (Debug.isOn() == true)
+//			subRes.print();
+//	}		
 	
 	////////////////////////////////////////////////
 	//	Thread	
 	////////////////////////////////////////////////
 
-	private HTTPServerList getHTTPServerList() 
-	{
-		return getDeviceData().getHTTPServerList();
-	}
-
+//	private HTTPServerList getHTTPServerList() 
+//	{
+//		return getDeviceData().getHTTPServerList();
+//	}
+//
 	private SSDPSearchSocketList getSSDPSearchSocketList() 
 	{
 		return getDeviceData().getSSDPSearchSocketList();
@@ -1639,46 +1684,46 @@ public class UPNPListener extends UPnP implements org.cybergarage.http.HTTPReque
 		return true;
 	}
 	
-	public boolean stop()
-	{
-		return stop(true);
-	}
-
-	////////////////////////////////////////////////
-	// Interface Address
-	////////////////////////////////////////////////
-	
-	public String getInterfaceAddress() 
-	{
-		SSDPPacket ssdpPacket = getSSDPPacket();
-		if (ssdpPacket == null)
-			return "";
-		return ssdpPacket.getLocalAddress();
-	}
-
-	////////////////////////////////////////////////
-	// Acion/QueryListener
-	////////////////////////////////////////////////
-	
-	public void setActionListener(ActionListener listener)
-	{
-		ServiceList serviceList = getServiceList();
-		int nServices = serviceList.size();
-		for (int n=0; n<nServices; n++) {
-			Service service = serviceList.getService(n);
-			service.setActionListener(listener);
-		}
-	}
-
-	public void setQueryListener(QueryListener listener)
-	{
-		ServiceList serviceList = getServiceList();
-		int nServices = serviceList.size();
-		for (int n=0; n<nServices; n++) {
-			Service service = serviceList.getService(n);
-			service.setQueryListener(listener);
-		}
-	}
+//	public boolean stop()
+//	{
+//		return stop(true);
+//	}
+//
+//	////////////////////////////////////////////////
+//	// Interface Address
+//	////////////////////////////////////////////////
+//	
+//	public String getInterfaceAddress() 
+//	{
+//		SSDPPacket ssdpPacket = getSSDPPacket();
+//		if (ssdpPacket == null)
+//			return "";
+//		return ssdpPacket.getLocalAddress();
+//	}
+//
+//	////////////////////////////////////////////////
+//	// Acion/QueryListener
+//	////////////////////////////////////////////////
+//	
+//	public void setActionListener(ActionListener listener)
+//	{
+//		ServiceList serviceList = getServiceList();
+//		int nServices = serviceList.size();
+//		for (int n=0; n<nServices; n++) {
+//			Service service = serviceList.getService(n);
+//			service.setActionListener(listener);
+//		}
+//	}
+//
+//	public void setQueryListener(QueryListener listener)
+//	{
+//		ServiceList serviceList = getServiceList();
+//		int nServices = serviceList.size();
+//		for (int n=0; n<nServices; n++) {
+//			Service service = serviceList.getService(n);
+//			service.setQueryListener(listener);
+//		}
+//	}
 
 	////////////////////////////////////////////////
 	// Acion/QueryListener (includeSubDevices)

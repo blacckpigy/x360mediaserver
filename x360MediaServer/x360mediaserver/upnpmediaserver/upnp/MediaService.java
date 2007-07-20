@@ -41,14 +41,14 @@ import x360mediaserver.upnpmediaserver.upnp.cybergarage.NewActionResponse;
 
 //Uses some code and classes from Cybergate
 
-public abstract class Service {
+public abstract class MediaService {
 	
 	// Class to handle differend upnp services and actions
 	String SERVICE_STRING;
 	
 	protected HashMap<String,Action> actionmap;
 	
-	public Service(){
+	public MediaService(){
 		super();
 		actionmap=new HashMap<String,Action>();
 	}

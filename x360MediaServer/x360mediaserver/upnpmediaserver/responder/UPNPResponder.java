@@ -17,9 +17,8 @@
 package x360mediaserver.upnpmediaserver.responder;
 
 import org.cybergarage.http.HTTPRequest;
+import org.cybergarage.upnp.Service;
 import org.cybergarage.upnp.device.InvalidDescriptionException;
-import org.cybergarage.upnp.device.ST;
-import org.cybergarage.upnp.ssdp.SSDPPacket;
 import org.cybergarage.util.Debug;
 import org.cybergarage.xml.Node;
 
@@ -56,19 +55,18 @@ public class UPNPResponder extends UPNPListener
     {
         super(description, description.getNode("device"));
 
-//        loadDescription(description);
         initializeLoadedDescription();
         setHTTPPort(port);
 
         
         Service servConDir = getService(CONTENT_DIRECTORY_SERVICE_TYPE);
-        servConDir.loadSCPD(contentDirectorySCPD);
+        servConDir.loadSCPD(contentDirectorySCPD.toString());
 
         Service servConMan = getService(CONNECTION_MANAGER_SERVICE_TYPE);
-        servConMan.loadSCPD(connectionManagerSCPD);
+        servConMan.loadSCPD(connectionManagerSCPD.toString());
 
         Service servmedRR = getService(MEDIA_RECEIVER_REGISTRAR_SERVICE_TYPE);
-        servmedRR.loadSCPD(mediaReceiverRegistrarSCPD);
+        servmedRR.loadSCPD(mediaReceiverRegistrarSCPD.toString());
 
     }
 
