@@ -58,7 +58,7 @@ public class Artist extends Container{
 	
 	// get content node -- big dirty hack for the Xbox360
 	public ContentNode getSummaryContentNode(){
-		SongNode result=new SongNode();		
+		SongNode result = new SongNode();		
 				
 		result.setTitle(StringUtils.getHtmlString(this.getName()));
 		result.setAttribute("childCount",""+albums.size());
