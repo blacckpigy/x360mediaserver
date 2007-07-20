@@ -17,144 +17,178 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+
 package x360mediaserver.upnpmediaserver.upnp.items;
 
-public class Tag {
-	
-	public void fillBlanks(java.io.File file){
-		if(artist==null) artist="";
-		if(album==null) album="";
-		if(title==null) title=file.getName();
-		if(year==null || year=="") year="2012";		
-	}
-	
-	String artist;
-	String album;
-	String title;
-	String year;
-	int tracknumber=-1; // number of track on the album
-	long time=60000; // length in ms
-	
-	int bitrate=-1;
-	int size=-1;
-	int samplerate=-1;
-	
-	
-	public void setArtist(String artist){
-		this.artist=artist;
-	}
-	
-	public void setAlbum(String album){
-		this.album=album;
-	}
-	
-	public void setYear(String year){
-		this.year=year;
-	}
-	
-	public void setTitle(String title){
-		this.title=title;
-	}
-	
-	public int getTracknumber() {
-		return tracknumber;
-	}
-	
-	public void setTracknumber(int tracknumber) {
-		this.tracknumber = tracknumber;
-	}
-	
-	public String getAlbum() {
-		return album;
-	}
-	
-	public String getArtist() {
-		return artist;
-	}
-	
-	public String getTitle() {
-		return title;
-	}
-	
-	public String getYear() {
-		return year;
-	}
-	
-	public long getTime() {
-		return time;
-	}
-	
-	public void setTime(long time) {
-		this.time = time;
-	}
-	
-	public String getTimeString(){
-		String result="";
-		long hrs=(time/(1000*60*60));
-		result=result+hrs+":";
-		long mins=(time%(1000*60*60))/(1000*60);
-		if(mins<10) result=result+"0"+mins+":";
-		else result=result+mins+":";
-		long seconds=(time%(1000*60*60))%(1000*60)/1000;
-		if(seconds<10) result=result+"0"+seconds+".";
-		else result=result+seconds+".";
-		long ms=(time%(1000*60*60))%(1000*60)%1000;
-		if(ms==0) result=result+"000";
-		else if(ms<10) result=result+"00"+ms;
-		else if(ms<100) result=result+"0"+ms;
-		else result=result+ms;
-		
-		return result;
-	}
+public class Tag
+{
 
-	public int getBitrate() {
-		return bitrate;
-	}
+    public void fillBlanks(java.io.File file)
+    {
+        if (artist == null)
+            artist = "";
+        if (album == null)
+            album = "";
+        if (title == null)
+            title = file.getName();
+        if (year == null || year == "")
+            year = "2012";
+    }
 
-	public void setBitrate(int bitrate) {
-		this.bitrate = bitrate;
-	}
+    String artist;
+    String album;
+    String title;
+    String year;
+    int    tracknumber = -1;   // number of track on the album
+    long   time        = 60000; // length in ms
 
-	public int getSamplerate() {
-		return samplerate;
-	}
+    int    bitrate     = -1;
+    int    size        = -1;
+    int    samplerate  = -1;
 
-	public void setSamplerate(int samplerate) {
-		this.samplerate = samplerate;
-	}
+    public void setArtist(String artist)
+    {
+        this.artist = artist;
+    }
 
-	public int getSize() {
-		return size;
-	}
+    public void setAlbum(String album)
+    {
+        this.album = album;
+    }
 
-	public void setSize(int size) {
-		this.size = size;
-	}
-	
-	public String toString(){
-		String result="";
-		if(title!=null){
-			result+="Title:"+title+"\n";
-		}
-		if(artist!=null){
-			result+="Artist:"+artist+"\n";
-		}
-		if(album!=null){
-			result+="Album:"+album+"\n";
-		}
-		if(year!=null){
-			result+="Year:"+year+"\n";
-		}
-		result+="Track:"+tracknumber+"\n";
-		result+="Time:"+time+"\n";
-		result+="Bit Rate:"+bitrate+"\n";
-		result+="Sample Rate:"+samplerate+"\n";
-		result+="Size:"+size+"\n";
-		
-		return result;
-	}
-	
-	
-	
-	
+    public void setYear(String year)
+    {
+        this.year = year;
+    }
+
+    public void setTitle(String title)
+    {
+        this.title = title;
+    }
+
+    public int getTracknumber()
+    {
+        return tracknumber;
+    }
+
+    public void setTracknumber(int tracknumber)
+    {
+        this.tracknumber = tracknumber;
+    }
+
+    public String getAlbum()
+    {
+        return album;
+    }
+
+    public String getArtist()
+    {
+        return artist;
+    }
+
+    public String getTitle()
+    {
+        return title;
+    }
+
+    public String getYear()
+    {
+        return year;
+    }
+
+    public long getTime()
+    {
+        return time;
+    }
+
+    public void setTime(long time)
+    {
+        this.time = time;
+    }
+
+    public String getTimeString()
+    {
+        String result = "";
+        long hrs = (time / (1000 * 60 * 60));
+        result = result + hrs + ":";
+        long mins = (time % (1000 * 60 * 60)) / (1000 * 60);
+        if (mins < 10)
+            result = result + "0" + mins + ":";
+        else
+            result = result + mins + ":";
+        long seconds = (time % (1000 * 60 * 60)) % (1000 * 60) / 1000;
+        if (seconds < 10)
+            result = result + "0" + seconds + ".";
+        else
+            result = result + seconds + ".";
+        long ms = (time % (1000 * 60 * 60)) % (1000 * 60) % 1000;
+        if (ms == 0)
+            result = result + "000";
+        else if (ms < 10)
+            result = result + "00" + ms;
+        else if (ms < 100)
+            result = result + "0" + ms;
+        else
+            result = result + ms;
+
+        return result;
+    }
+
+    public int getBitrate()
+    {
+        return bitrate;
+    }
+
+    public void setBitrate(int bitrate)
+    {
+        this.bitrate = bitrate;
+    }
+
+    public int getSamplerate()
+    {
+        return samplerate;
+    }
+
+    public void setSamplerate(int samplerate)
+    {
+        this.samplerate = samplerate;
+    }
+
+    public int getSize()
+    {
+        return size;
+    }
+
+    public void setSize(int size)
+    {
+        this.size = size;
+    }
+
+    public String toString()
+    {
+        String result = "";
+        if (title != null)
+        {
+            result += "Title:" + title + "\n";
+        }
+        if (artist != null)
+        {
+            result += "Artist:" + artist + "\n";
+        }
+        if (album != null)
+        {
+            result += "Album:" + album + "\n";
+        }
+        if (year != null)
+        {
+            result += "Year:" + year + "\n";
+        }
+        result += "Track:" + tracknumber + "\n";
+        result += "Time:" + time + "\n";
+        result += "Bit Rate:" + bitrate + "\n";
+        result += "Sample Rate:" + samplerate + "\n";
+        result += "Size:" + size + "\n";
+
+        return result;
+    }
 }
