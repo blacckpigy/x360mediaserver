@@ -1,177 +1,174 @@
 /******************************************************************
-*
-*	MediaPlayer for CyberLink
-*
-*	Copyright (C) Satoshi Konno 2005
-*
-*	File : BrowseAction.java
-*
-*	09/26/05
-*		- first revision.
-*
-******************************************************************/
+ *
+ *	MediaPlayer for CyberLink
+ *
+ *	Copyright (C) Satoshi Konno 2005
+ *
+ *	File : BrowseAction.java
+ *
+ *	09/26/05
+ *		- first revision.
+ *
+ ******************************************************************/
 
 package org.cybergarage.upnp.media.player.action;
 
-import org.cybergarage.xml.*;
-import org.cybergarage.upnp.*;
-import org.cybergarage.upnp.media.server.*;
+import org.cybergarage.upnp.Action;
+import org.cybergarage.upnp.Argument;
 
 public class BrowseAction
 {
-	////////////////////////////////////////////////
-	// Constants
-	////////////////////////////////////////////////
+    // //////////////////////////////////////////////
+    // Constants
+    // //////////////////////////////////////////////
 
-	public final static String OBJECT_ID = "ObjectID";
-	public final static String BROWSE_FLAG = "BrowseFlag";
-	public final static String FILTER = "Filter";
-	public final static String STARTING_INDEX = "StartingIndex";
-	public final static String REQUESTED_COUNT = "RequestedCount";
-	public final static String SORT_CRITERIA = "SortCriteria";
-		
-	public final static String BROWSE_METADATA = "BrowseMetadata";
-	public final static String BROWSE_DIRECT_CHILDREN = "BrowseDirectChildren";
+    public final static String OBJECT_ID              = "ObjectID";
+    public final static String BROWSE_FLAG            = "BrowseFlag";
+    public final static String FILTER                 = "Filter";
+    public final static String STARTING_INDEX         = "StartingIndex";
+    public final static String REQUESTED_COUNT        = "RequestedCount";
+    public final static String SORT_CRITERIA          = "SortCriteria";
 
-	public final static String RESULT = "Result";
-	public final static String NUMBER_RETURNED = "NumberReturned";
-	public final static String TOTAL_MACHES = "TotalMatches";
-	public final static String UPDATE_ID = "UpdateID";
-	
-	////////////////////////////////////////////////
-	// Member
-	////////////////////////////////////////////////
+    public final static String BROWSE_METADATA        = "BrowseMetadata";
+    public final static String BROWSE_DIRECT_CHILDREN = "BrowseDirectChildren";
 
-	private Action action;
+    public final static String RESULT                 = "Result";
+    public final static String NUMBER_RETURNED        = "NumberReturned";
+    public final static String TOTAL_MACHES           = "TotalMatches";
+    public final static String UPDATE_ID              = "UpdateID";
 
-	////////////////////////////////////////////////
-	// Constrictor
-	////////////////////////////////////////////////
-	
-	public BrowseAction(Action action)
-	{
-		this.action = action;
-	}
+    // //////////////////////////////////////////////
+    // Member
+    // //////////////////////////////////////////////
 
-	////////////////////////////////////////////////
-	// getArgument
-	////////////////////////////////////////////////
+    private Action             action;
 
-	public Argument getArgument(String name)
-	{
-		return action.getArgument(name);
-	}
+    // //////////////////////////////////////////////
+    // Constrictor
+    // //////////////////////////////////////////////
 
-	////////////////////////////////////////////////
-	// Request
-	////////////////////////////////////////////////
+    public BrowseAction(Action action)
+    {
+        this.action = action;
+    }
 
-	public String getBrowseFlag()
-	{
-		return action.getArgumentValue(BROWSE_FLAG);
-	}
-	
-	public boolean isMetadata()
-	{
-		return BROWSE_METADATA.equals(getBrowseFlag());
-	}
+    // //////////////////////////////////////////////
+    // getArgument
+    // //////////////////////////////////////////////
 
-	public boolean isDirectChildren()
-	{
-		return BROWSE_DIRECT_CHILDREN.equals(getBrowseFlag());
-	}
-	
-	public String getObjectID()
-	{
-		return action.getArgumentValue(OBJECT_ID);
-	}
+    public Argument getArgument(String name)
+    {
+        return action.getArgument(name);
+    }
 
-	public int getStartingIndex()
-	{
-		return action.getArgumentIntegerValue(STARTING_INDEX);
-	}
+    // //////////////////////////////////////////////
+    // Request
+    // //////////////////////////////////////////////
 
-	public int getRequestedCount()
-	{
-		return action.getArgumentIntegerValue(REQUESTED_COUNT);
-	}
-	
-	public String getSortCriteria()
-	{
-		return action.getArgumentValue(SORT_CRITERIA);
-	}
+    public String getBrowseFlag()
+    {
+        return action.getArgumentValue(BROWSE_FLAG);
+    }
 
-	public String getFilter()
-	{
-		return action.getArgumentValue(FILTER);
-	}
+    public boolean isMetadata()
+    {
+        return BROWSE_METADATA.equals(getBrowseFlag());
+    }
 
-	////////////////////////////////////////////////
-	// Request
-	////////////////////////////////////////////////
+    public boolean isDirectChildren()
+    {
+        return BROWSE_DIRECT_CHILDREN.equals(getBrowseFlag());
+    }
 
-	public void setBrowseFlag(String browseFlag)
-	{
-		action.setArgumentValue(BROWSE_FLAG, browseFlag);
-	}
-	
-	public void setObjectID(String objectID)
-	{
-		action.setArgumentValue(OBJECT_ID, objectID);
-	}
+    public String getObjectID()
+    {
+        return action.getArgumentValue(OBJECT_ID);
+    }
 
-	public void setStartingIndex(int idx)
-	{
-		action.setArgumentValue(STARTING_INDEX, idx);
-	}
+    public int getStartingIndex()
+    {
+        return action.getArgumentIntegerValue(STARTING_INDEX);
+    }
 
-	public void setRequestedCount(int count)
-	{
-		action.setArgumentValue(REQUESTED_COUNT, count);
-	}
-	
-	public void setFilter(String filter)
-	{
-		action.setArgumentValue(FILTER, filter);
-	}
+    public int getRequestedCount()
+    {
+        return action.getArgumentIntegerValue(REQUESTED_COUNT);
+    }
 
-	public void setSortCriteria(String sortCaiteria)
-	{
-		action.setArgumentValue(SORT_CRITERIA, sortCaiteria);
-	}
+    public String getSortCriteria()
+    {
+        return action.getArgumentValue(SORT_CRITERIA);
+    }
 
-	////////////////////////////////////////////////
-	// Result
-	////////////////////////////////////////////////
+    public String getFilter()
+    {
+        return action.getArgumentValue(FILTER);
+    }
 
-	public void setResult(String value)
-	{
-		action.setArgumentValue(RESULT, value);
-	}
+    // //////////////////////////////////////////////
+    // Request
+    // //////////////////////////////////////////////
 
-	public void setNumberReturned(int value)
-	{
-		action.setArgumentValue(NUMBER_RETURNED, value);
-	}
+    public void setBrowseFlag(String browseFlag)
+    {
+        action.setArgumentValue(BROWSE_FLAG, browseFlag);
+    }
 
-	public void setTotalMaches(int value)
-	{
-		action.setArgumentValue(TOTAL_MACHES, value);
-	}
+    public void setObjectID(String objectID)
+    {
+        action.setArgumentValue(OBJECT_ID, objectID);
+    }
 
-	public void setUpdateID(int value)
-	{
-		action.setArgumentValue(UPDATE_ID, value);
-	}
+    public void setStartingIndex(int idx)
+    {
+        action.setArgumentValue(STARTING_INDEX, idx);
+    }
 
-	////////////////////////////////////////////////
-	// post
-	////////////////////////////////////////////////
+    public void setRequestedCount(int count)
+    {
+        action.setArgumentValue(REQUESTED_COUNT, count);
+    }
 
-	public boolean postControlAction()
-	{
-		return action.postControlAction();
-	}
+    public void setFilter(String filter)
+    {
+        action.setArgumentValue(FILTER, filter);
+    }
+
+    public void setSortCriteria(String sortCaiteria)
+    {
+        action.setArgumentValue(SORT_CRITERIA, sortCaiteria);
+    }
+
+    // //////////////////////////////////////////////
+    // Result
+    // //////////////////////////////////////////////
+
+    public void setResult(String value)
+    {
+        action.setArgumentValue(RESULT, value);
+    }
+
+    public void setNumberReturned(int value)
+    {
+        action.setArgumentValue(NUMBER_RETURNED, value);
+    }
+
+    public void setTotalMaches(int value)
+    {
+        action.setArgumentValue(TOTAL_MACHES, value);
+    }
+
+    public void setUpdateID(int value)
+    {
+        action.setArgumentValue(UPDATE_ID, value);
+    }
+
+    // //////////////////////////////////////////////
+    // post
+    // //////////////////////////////////////////////
+
+    public boolean postControlAction()
+    {
+        return action.postControlAction();
+    }
 }
-
-

@@ -1,136 +1,136 @@
 /******************************************************************
-*
-*	CyberUPnP for Java
-*
-*	Copyright (C) Satoshi Konno 2002
-*
-*	File: Icon.java
-*
-*	Revision;
-*
-*	11/28/02
-*		- first revision.
-*	
-******************************************************************/
+ *
+ *	CyberUPnP for Java
+ *
+ *	Copyright (C) Satoshi Konno 2002
+ *
+ *	File: Icon.java
+ *
+ *	Revision;
+ *
+ *	11/28/02
+ *		- first revision.
+ *	
+ ******************************************************************/
 
 package org.cybergarage.upnp;
 
-import org.cybergarage.xml.*;
+import org.cybergarage.xml.Node;
 
 public class Icon
 {
-	////////////////////////////////////////////////
-	//	Constants
-	////////////////////////////////////////////////
-	
-	public final static String ELEM_NAME = "icon";
+    // //////////////////////////////////////////////
+    // Constants
+    // //////////////////////////////////////////////
 
-	////////////////////////////////////////////////
-	//	Member
-	////////////////////////////////////////////////
+    public final static String ELEM_NAME = "icon";
 
-	private Node iconNode;
+    // //////////////////////////////////////////////
+    // Member
+    // //////////////////////////////////////////////
 
-	public Node getIconNode()
-	{
-		return iconNode;
-	}
-	
-	////////////////////////////////////////////////
-	//	Constructor
-	////////////////////////////////////////////////
+    private Node               iconNode;
 
-	public Icon(Node node)
-	{
-		iconNode = node;
-	}
+    public Node getIconNode()
+    {
+        return iconNode;
+    }
 
-	////////////////////////////////////////////////
-	//	isIconNode
-	////////////////////////////////////////////////
+    // //////////////////////////////////////////////
+    // Constructor
+    // //////////////////////////////////////////////
 
-	public static boolean isIconNode(Node node)
-	{
-		return Icon.ELEM_NAME.equals(node.getName());
-	}
+    public Icon(Node node)
+    {
+        iconNode = node;
+    }
 
-	////////////////////////////////////////////////
-	//	mimeType
-	////////////////////////////////////////////////
+    // //////////////////////////////////////////////
+    // isIconNode
+    // //////////////////////////////////////////////
 
-	private final static String MIME_TYPE = "mimeType";
-	
-	public void setMimeType(String value)
-	{
-		getIconNode().setNode(MIME_TYPE, value);
-	}
+    public static boolean isIconNode(Node node)
+    {
+        return Icon.ELEM_NAME.equals(node.getName());
+    }
 
-	public String getMimeType()
-	{
-		return getIconNode().getNodeValue(MIME_TYPE);
-	}
+    // //////////////////////////////////////////////
+    // mimeType
+    // //////////////////////////////////////////////
 
-	////////////////////////////////////////////////
-	//	width
-	////////////////////////////////////////////////
+    private final static String MIME_TYPE = "mimeType";
 
-	private final static String WIDTH = "width";
-	
-	public void setWidth(String value)
-	{
-		getIconNode().setNode(WIDTH, value);
-	}
+    public void setMimeType(String value)
+    {
+        getIconNode().setNode(MIME_TYPE, value);
+    }
 
-	public String getWidth()
-	{
-		return getIconNode().getNodeValue(WIDTH);
-	}
+    public String getMimeType()
+    {
+        return getIconNode().getNodeValue(MIME_TYPE);
+    }
 
-	////////////////////////////////////////////////
-	//	height
-	////////////////////////////////////////////////
+    // //////////////////////////////////////////////
+    // width
+    // //////////////////////////////////////////////
 
-	private final static String HEIGHT = "height";
-	
-	public void setHeight(String value)
-	{
-		getIconNode().setNode(HEIGHT, value);
-	}
+    private final static String WIDTH = "width";
 
-	public String getHeight()
-	{
-		return getIconNode().getNodeValue(HEIGHT);
-	}
+    public void setWidth(String value)
+    {
+        getIconNode().setNode(WIDTH, value);
+    }
 
-	////////////////////////////////////////////////
-	//	depth
-	////////////////////////////////////////////////
+    public String getWidth()
+    {
+        return getIconNode().getNodeValue(WIDTH);
+    }
 
-	private final static String DEPTH = "depth";
-	
-	public void setDepth(String value)
-	{
-		getIconNode().setNode(DEPTH, value);
-	}
+    // //////////////////////////////////////////////
+    // height
+    // //////////////////////////////////////////////
 
-	public String getDepth()
-	{
-		return getIconNode().getNodeValue(DEPTH);
-	}
+    private final static String HEIGHT = "height";
 
-	////////////////////////////////////////////////
-	//	URL
-	////////////////////////////////////////////////
+    public void setHeight(String value)
+    {
+        getIconNode().setNode(HEIGHT, value);
+    }
 
-	private final static String URL = "url";
-	
-	public void setURL(String value)
-	{
-		getIconNode().setNode(URL, value);
-	}
+    public String getHeight()
+    {
+        return getIconNode().getNodeValue(HEIGHT);
+    }
 
-	public String getURL()
-	{
-		return getIconNode().getNodeValue(URL);
-	}
+    // //////////////////////////////////////////////
+    // depth
+    // //////////////////////////////////////////////
+
+    private final static String DEPTH = "depth";
+
+    public void setDepth(String value)
+    {
+        getIconNode().setNode(DEPTH, value);
+    }
+
+    public String getDepth()
+    {
+        return getIconNode().getNodeValue(DEPTH);
+    }
+
+    // //////////////////////////////////////////////
+    // URL
+    // //////////////////////////////////////////////
+
+    private final static String URL = "url";
+
+    public void setURL(String value)
+    {
+        getIconNode().setNode(URL, value);
+    }
+
+    public String getURL()
+    {
+        return getIconNode().getNodeValue(URL);
+    }
 }

@@ -1,830 +1,869 @@
 /******************************************************************
-*
-*	CyberHTTP for Java
-*
-*	Copyright (C) Satoshi Konno 2002-2004
-*
-*	File: HTTPConnection.java
-*
-*	Revision;
-*
-*	11/18/02
-*		- first revision.
-*	09/02/03
-*		- Giordano Sassaroli <sassarol@cefriel.it>
-*		- Problem : The API is unable to receive responses from the Microsoft UPnP stack
-*		- Error : the Microsoft UPnP stack is based on ISAPI on IIS, and whenever IIS
-*                 receives a post request, it answers with two responses: the first one has no 
-*		          body and it is a code 100 (continue) response, which has to be ignored. The
-*		          second response is the actual one and should be parsed as the response.
-*	02/09/04
-*		- Ralf G. R. Bergs" <Ralf@Ber.gs>
-*		- Why do you strip leading and trailing white space from the response body?
-*		- Disabled to trim the content string.
-*	03/11/04
-*		- Added some methods about InputStream content.
-*		  setContentInputStream(), getContentInputStream() and hasContentInputStream().
-*	03/16/04
-*		- Thanks for Darrell Young
-*		- Added setVersion() and getVersion();
-*	03/17/04
-*		- Added hasFirstLine();
-*	05/26/04
-*		- Jan Newmarch <jan.newmarch@infotech.monash.edu.au> (05/26/04)
-*		- Changed setCacheControl() and getChcheControl();
-*	08/25/04
-*		- Added the following methods.
-*		  hasContentRange(), setContentRange(), getContentRange(), 
-*		  getContentRangeFirstPosition(), getContentRangeLastPosition() and getContentRangeInstanceLength()
-*	08/26/04
-*		- Added the following methods.
-*		  hasConnection(), setConnection(), getConnection(), 
-*		  isCloseConnection() and isKeepAliveConnection()
-*	08/27/04
-*		- Added a updateWithContentLength paramger to setContent().
-*		- Changed to HTTPPacket::set() not to change the header of Content-Length.
-*	08/28/04
-*		- Added init() and read().
-*	09/19/04
-*		- Added a onlyHeaders parameter to set().
-*	10/20/04 
-*		- Brent Hills <bhills@openshores.com>
-*		- Changed hasContentRange() to check Content-Range and Range header.
-*		- Added support for Range header to getContentRange().
-*	02/02/05
-*		- Mark Retallack <mretallack@users.sourceforge.net>
-*		- Fixed set() not to read over the content length when the stream is keep alive.
-*	02/28/05
-*		- Added the following methods for chunked stream support.
-*		  hasTransferEncoding(), setTransferEncoding(), getTransferEncoding(), isChunked().
-*	03/02/05
-*		- Changed post() to suppot chunked stream.
-*
-*******************************************************************/
+ *
+ *	CyberHTTP for Java
+ *
+ *	Copyright (C) Satoshi Konno 2002-2004
+ *
+ *	File: HTTPConnection.java
+ *
+ *	Revision;
+ *
+ *	11/18/02
+ *		- first revision.
+ *	09/02/03
+ *		- Giordano Sassaroli <sassarol@cefriel.it>
+ *		- Problem : The API is unable to receive responses from the Microsoft UPnP stack
+ *		- Error : the Microsoft UPnP stack is based on ISAPI on IIS, and whenever IIS
+ *                 receives a post request, it answers with two responses: the first one has no 
+ *		          body and it is a code 100 (continue) response, which has to be ignored. The
+ *		          second response is the actual one and should be parsed as the response.
+ *	02/09/04
+ *		- Ralf G. R. Bergs" <Ralf@Ber.gs>
+ *		- Why do you strip leading and trailing white space from the response body?
+ *		- Disabled to trim the content string.
+ *	03/11/04
+ *		- Added some methods about InputStream content.
+ *		  setContentInputStream(), getContentInputStream() and hasContentInputStream().
+ *	03/16/04
+ *		- Thanks for Darrell Young
+ *		- Added setVersion() and getVersion();
+ *	03/17/04
+ *		- Added hasFirstLine();
+ *	05/26/04
+ *		- Jan Newmarch <jan.newmarch@infotech.monash.edu.au> (05/26/04)
+ *		- Changed setCacheControl() and getChcheControl();
+ *	08/25/04
+ *		- Added the following methods.
+ *		  hasContentRange(), setContentRange(), getContentRange(), 
+ *		  getContentRangeFirstPosition(), getContentRangeLastPosition() and getContentRangeInstanceLength()
+ *	08/26/04
+ *		- Added the following methods.
+ *		  hasConnection(), setConnection(), getConnection(), 
+ *		  isCloseConnection() and isKeepAliveConnection()
+ *	08/27/04
+ *		- Added a updateWithContentLength paramger to setContent().
+ *		- Changed to HTTPPacket::set() not to change the header of Content-Length.
+ *	08/28/04
+ *		- Added init() and read().
+ *	09/19/04
+ *		- Added a onlyHeaders parameter to set().
+ *	10/20/04 
+ *		- Brent Hills <bhills@openshores.com>
+ *		- Changed hasContentRange() to check Content-Range and Range header.
+ *		- Added support for Range header to getContentRange().
+ *	02/02/05
+ *		- Mark Retallack <mretallack@users.sourceforge.net>
+ *		- Fixed set() not to read over the content length when the stream is keep alive.
+ *	02/28/05
+ *		- Added the following methods for chunked stream support.
+ *		  hasTransferEncoding(), setTransferEncoding(), getTransferEncoding(), isChunked().
+ *	03/02/05
+ *		- Changed post() to suppot chunked stream.
+ *
+ *******************************************************************/
 
 package org.cybergarage.http;
 
-import java.io.*;
-import java.net.SocketException;
-import java.util.*;
-
-import org.cybergarage.net.*;
-import org.cybergarage.util.*;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Calendar;
+import java.util.StringTokenizer;
+import java.util.Vector;
 
-public class HTTPPacket 
+import org.cybergarage.net.HostInterface;
+import org.cybergarage.util.Debug;
+import org.cybergarage.util.StringUtil;
+
+public class HTTPPacket
 {
-	////////////////////////////////////////////////
-	//	Constructor
-	////////////////////////////////////////////////
-	
-	public HTTPPacket()
-	{
-		setVersion(HTTP.VERSION);
-		setContentInputStream(null);
-	}
+    // //////////////////////////////////////////////
+    // Constructor
+    // //////////////////////////////////////////////
 
-	public HTTPPacket(HTTPPacket httpPacket)
-	{
-		setVersion(HTTP.VERSION);
-		set(httpPacket);
-		setContentInputStream(null);
-	}
+    public HTTPPacket()
+    {
+        setVersion(HTTP.VERSION);
+        setContentInputStream(null);
+    }
 
-	public HTTPPacket(InputStream in)
-	{
-		setVersion(HTTP.VERSION);
-		set(in);
-		setContentInputStream(null);
-	}
+    public HTTPPacket(HTTPPacket httpPacket)
+    {
+        setVersion(HTTP.VERSION);
+        set(httpPacket);
+        setContentInputStream(null);
+    }
 
-	////////////////////////////////////////////////
-	//	init
-	////////////////////////////////////////////////
-	
-	public void init()
-	{
-		setFirstLine("");
-		clearHeaders();
-		setContent(new byte[0], false);
-		setContentInputStream(null);
-	}
+    public HTTPPacket(InputStream in)
+    {
+        setVersion(HTTP.VERSION);
+        set(in);
+        setContentInputStream(null);
+    }
 
-	////////////////////////////////////////////////
-	//	Version
-	////////////////////////////////////////////////
-	
-	private String version;
-	
-	public void setVersion(String ver)
-	{
-		version = ver;
-	}
-	
-	public String getVersion()
-	{
-		return version;
-	}
-		
-	////////////////////////////////////////////////
-	//	set
-	////////////////////////////////////////////////
-	
-	protected boolean set(InputStream in, boolean onlyHeaders)
-	{
- 		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-			//try{
-			    String firstLine = reader.readLine();
-/*            }catch(SocketException se){
-                System.out.println("[HTTP ERROR START]");
-                System.out.println(this);
-                System.out.println("[HTTP ERROR END]");
-                throw se;
-            }*/
-			if (firstLine == null || firstLine.length() <= 0)
-				return false;
-			setFirstLine(firstLine);
-			
-			// Thanks for Giordano Sassaroli <sassarol@cefriel.it> (09/03/03)
-			HTTPStatus httpStatus = new HTTPStatus(firstLine);
-			int statCode = httpStatus.getStatusCode();
-			if (statCode == HTTPStatus.CONTINUE){
-				//ad hoc code for managing iis non-standard behaviour
-				//iis sends 100 code response and a 200 code response in the same
-				//stream, so the code should check the presence of the actual
-				//response in the stream.
-				//skip all header lines
-				String headerLine = reader.readLine();
-				while ((headerLine != null) && (0 < headerLine.length()) ) {
-					HTTPHeader header = new HTTPHeader(headerLine);
-					if (header.hasName() == true)
-						setHeader(header);
-					headerLine = reader.readLine();
-				}
-				//look forward another first line
-				String actualFirstLine = reader.readLine();
-				if ((actualFirstLine != null) && (0 < actualFirstLine.length()) ) {
-					//this is the actual first line
-					setFirstLine(actualFirstLine);
-				}else{
-					return true;
-				}
-			}
-				
-			String headerLine = reader.readLine();
-			while ((headerLine != null) && (0 < headerLine.length()) ) {
-				HTTPHeader header = new HTTPHeader(headerLine);
-				if (header.hasName() == true)
-					setHeader(header);
-				headerLine = reader.readLine();
-			}
-				
-			if (onlyHeaders == true) {
-				setContent("", false);
-				return true;
-			}
-				
-			boolean isChunkedRequest = isChunked();
-				
-			long contentLen = 0;
-			if (isChunkedRequest == true) {
-				try {
-					String chunkSizeLine = reader.readLine();
-					contentLen = Long.parseLong(new String(chunkSizeLine.getBytes(), 0, chunkSizeLine.length()-2));
-				}
-				catch (Exception e) {};
-			}else{
-				if(getHeader(HTTP.CONTENT_LENGTH)!=null){
-					contentLen = getContentLength();
-                }else if((getHeader(HTTP.CONNECTION)!=null)
-                        &&(getHeader(HTTP.CONNECTION).getValue().toLowerCase().indexOf("keep-alive")!=-1)
-                        &&(getHeader(HTTP.CONTENT_LENGTH)==null))
+    // //////////////////////////////////////////////
+    // init
+    // //////////////////////////////////////////////
+
+    public void init()
+    {
+        setFirstLine("");
+        clearHeaders();
+        setContent(new byte[0], false);
+        setContentInputStream(null);
+    }
+
+    // //////////////////////////////////////////////
+    // Version
+    // //////////////////////////////////////////////
+
+    private String version;
+
+    public void setVersion(String ver)
+    {
+        version = ver;
+    }
+
+    public String getVersion()
+    {
+        return version;
+    }
+
+    // //////////////////////////////////////////////
+    // set
+    // //////////////////////////////////////////////
+
+    protected boolean set(InputStream in, boolean onlyHeaders)
+    {
+        try
+        {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+            // try{
+            String firstLine = reader.readLine();
+/*
+ * }catch(SocketException se){ System.out.println("[HTTP ERROR START]"); System.out.println(this);
+ * System.out.println("[HTTP ERROR END]"); throw se; }
+ */
+            if (firstLine == null || firstLine.length() <= 0)
+                return false;
+            setFirstLine(firstLine);
+
+            // Thanks for Giordano Sassaroli <sassarol@cefriel.it> (09/03/03)
+            HTTPStatus httpStatus = new HTTPStatus(firstLine);
+            int statCode = httpStatus.getStatusCode();
+            if (statCode == HTTPStatus.CONTINUE)
+            {
+                // ad hoc code for managing iis non-standard behaviour
+                // iis sends 100 code response and a 200 code response in the same
+                // stream, so the code should check the presence of the actual
+                // response in the stream.
+                // skip all header lines
+                String headerLine = reader.readLine();
+                while ((headerLine != null) && (0 < headerLine.length()))
+                {
+                    HTTPHeader header = new HTTPHeader(headerLine);
+                    if (header.hasName() == true)
+                        setHeader(header);
+                    headerLine = reader.readLine();
+                }
+                // look forward another first line
+                String actualFirstLine = reader.readLine();
+                if ((actualFirstLine != null) && (0 < actualFirstLine.length()))
+                {
+                    // this is the actual first line
+                    setFirstLine(actualFirstLine);
+                }
+                else
+                {
+                    return true;
+                }
+            }
+
+            String headerLine = reader.readLine();
+            while ((headerLine != null) && (0 < headerLine.length()))
+            {
+                HTTPHeader header = new HTTPHeader(headerLine);
+                if (header.hasName() == true)
+                    setHeader(header);
+                headerLine = reader.readLine();
+            }
+
+            if (onlyHeaders == true)
+            {
+                setContent("", false);
+                return true;
+            }
+
+            boolean isChunkedRequest = isChunked();
+
+            long contentLen = 0;
+            if (isChunkedRequest == true)
+            {
+                try
+                {
+                    String chunkSizeLine = reader.readLine();
+                    contentLen = Long.parseLong(new String(chunkSizeLine.getBytes(), 0,
+                                                           chunkSizeLine.length() - 2));
+                }
+                catch (Exception e)
+                {
+                }
+                ;
+            }
+            else
+            {
+                if (getHeader(HTTP.CONTENT_LENGTH) != null)
+                {
+                    contentLen = getContentLength();
+                }
+                else if ((getHeader(HTTP.CONNECTION) != null) &&
+                         (getHeader(HTTP.CONNECTION).getValue().toLowerCase().indexOf("keep-alive") != -1) &&
+                         (getHeader(HTTP.CONTENT_LENGTH) == null))
                 {
                     contentLen = 0;
-                }else{
-					StringBuffer sb = new StringBuffer("");
-					int ch;
-					while((ch=reader.read())!=-1){
-						sb.append((char)ch);
-					}
-					setContent(sb.toString());
-					return true;
-				}
-			}		
-			StringBuffer contentBuf = new StringBuffer();
-			
-			while (0 < contentLen) {
-				int chunkSize = HTTP.getChunkSize();
-				char readBuf[] = new char[chunkSize];
-				long readCnt = 0;
-				while (readCnt < contentLen) {
-					try {
-						// Thanks for Mark Retallack (02/02/05)
-						long bufReadLen = contentLen - readCnt;
-						if (chunkSize < bufReadLen)
-							bufReadLen = chunkSize;
-						int readLen = reader.read(readBuf, 0, (int)bufReadLen);
-						if (readLen < 0)
-							break;
-						contentBuf.append(new String(readBuf, 0, readLen));
-						readCnt += readLen;
-					}
-					catch (Exception e)
-					{
-						Debug.warning(e);
-						break;
-					}
-				}
-				if (isChunkedRequest == true) {
-					// skip CRLF
-					long skipLen = 0;
-					do {
-						long skipCnt = reader.skip(HTTP.CRLF.length() - skipLen);
-						if (skipCnt < 0)
-							break;
-						skipLen += skipCnt;
-					} while (skipLen < HTTP.CRLF.length());
-					// read next chunk size
-					try {
-						String chunkSizeLine = reader.readLine();
-						contentLen = Long.parseLong(new String(chunkSizeLine.getBytes(), 0, chunkSizeLine.length()-2));
-					}
-					catch (Exception e) {
-						contentLen = 0;
-					};
-				}
-				else
-					contentLen = 0;
-			}
+                }
+                else
+                {
+                    StringBuffer sb = new StringBuffer("");
+                    int ch;
+                    while ((ch = reader.read()) != -1)
+                    {
+                        sb.append((char) ch);
+                    }
+                    setContent(sb.toString());
+                    return true;
+                }
+            }
+            StringBuffer contentBuf = new StringBuffer();
 
-			// Thanks for Ralf G. R. Bergs (02/09/04)
-			String contentStr = contentBuf.toString();
-			
-			setContent(contentStr.getBytes(), false);
- 		}
-		catch (Exception e) {
-			Debug.warning(e);
-			return false;
-		}
-		
-		return true;
-	}
+            while (0 < contentLen)
+            {
+                int chunkSize = HTTP.getChunkSize();
+                char readBuf[] = new char[chunkSize];
+                long readCnt = 0;
+                while (readCnt < contentLen)
+                {
+                    try
+                    {
+                        // Thanks for Mark Retallack (02/02/05)
+                        long bufReadLen = contentLen - readCnt;
+                        if (chunkSize < bufReadLen)
+                            bufReadLen = chunkSize;
+                        int readLen = reader.read(readBuf, 0, (int) bufReadLen);
+                        if (readLen < 0)
+                            break;
+                        contentBuf.append(new String(readBuf, 0, readLen));
+                        readCnt += readLen;
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.warning(e);
+                        break;
+                    }
+                }
+                if (isChunkedRequest == true)
+                {
+                    // skip CRLF
+                    long skipLen = 0;
+                    do
+                    {
+                        long skipCnt = reader.skip(HTTP.CRLF.length() - skipLen);
+                        if (skipCnt < 0)
+                            break;
+                        skipLen += skipCnt;
+                    } while (skipLen < HTTP.CRLF.length());
+                    // read next chunk size
+                    try
+                    {
+                        String chunkSizeLine = reader.readLine();
+                        contentLen = Long.parseLong(new String(chunkSizeLine.getBytes(), 0,
+                                                               chunkSizeLine.length() - 2));
+                    }
+                    catch (Exception e)
+                    {
+                        contentLen = 0;
+                    }
+                    ;
+                }
+                else
+                    contentLen = 0;
+            }
 
-	protected boolean set(InputStream in)
-	{
-		return set(in, false);
-	}
-	
-	protected boolean set(HTTPSocket httpSock)
-	{
-		return set(httpSock.getInputStream());
-	}
+            // Thanks for Ralf G. R. Bergs (02/09/04)
+            String contentStr = contentBuf.toString();
 
-	protected void set(HTTPPacket httpPacket)
-	{
-		setFirstLine(httpPacket.getFirstLine());
-		
-		clearHeaders();
-		int nHeaders = httpPacket.getNHeaders();
-		for (int n=0; n<nHeaders; n++) {
-			HTTPHeader header = httpPacket.getHeader(n);
-			addHeader(header);
-		}
-		setContent(httpPacket.getContent());
-	}
+            setContent(contentStr.getBytes(), false);
+        }
+        catch (Exception e)
+        {
+            Debug.warning(e);
+            return false;
+        }
 
-	////////////////////////////////////////////////
-	//	read
-	////////////////////////////////////////////////
-	
-	public boolean read(HTTPSocket httpSock)
-	{
-		init();
-		return set(httpSock);
-	}
-	
-	////////////////////////////////////////////////
-	//	String
-	////////////////////////////////////////////////
+        return true;
+    }
 
-	private String firstLine = "";
-	
-	private void setFirstLine(String value)
-	{
-			firstLine = value;
-	}
-	
-	protected String getFirstLine()
-	{
-		return firstLine;
-	}
+    protected boolean set(InputStream in)
+    {
+        return set(in, false);
+    }
 
-	protected String getFirstLineToken(int num)
-	{
-		StringTokenizer st = new StringTokenizer(firstLine, HTTP.REQEST_LINE_DELIM);
-		String lastToken = "";
-		for (int n=0; n<=num; n++) {
-			if (st.hasMoreTokens() == false)
-				return "";
-			lastToken = st.nextToken();
-		}
-		return lastToken;
-     }
-	
-	public boolean hasFirstLine()
-	{
-		return (0 < firstLine.length()) ? true : false;
-	}
-	
-	////////////////////////////////////////////////
-	//	Header
-	////////////////////////////////////////////////
+    protected boolean set(HTTPSocket httpSock)
+    {
+        return set(httpSock.getInputStream());
+    }
 
-	private Vector httpHeaderList = new Vector();
-	
-	public int getNHeaders()
-	{
-		return httpHeaderList.size();
-	}
+    protected void set(HTTPPacket httpPacket)
+    {
+        setFirstLine(httpPacket.getFirstLine());
 
-	public void addHeader(HTTPHeader header)
-	{
-		httpHeaderList.add(header);
-	}
+        clearHeaders();
+        int nHeaders = httpPacket.getNHeaders();
+        for (int n = 0; n < nHeaders; n++ )
+        {
+            HTTPHeader header = httpPacket.getHeader(n);
+            addHeader(header);
+        }
+        setContent(httpPacket.getContent());
+    }
 
-	public void addHeader(String name, String value)
-	{
-		HTTPHeader header = new HTTPHeader(name, value);
-		httpHeaderList.add(header);
-	}
+    // //////////////////////////////////////////////
+    // read
+    // //////////////////////////////////////////////
 
-	public HTTPHeader getHeader(int n)
-	{
-		return (HTTPHeader)httpHeaderList.get(n);
-	}
-	
-	public HTTPHeader getHeader(String name)
-	{
-		int nHeaders = getNHeaders();
-		for (int n=0; n<nHeaders; n++) {
-			HTTPHeader header = getHeader(n);
-			String headerName = header.getName();
-			if (headerName.equalsIgnoreCase(name) == true)
-				return header;			
-		}
-		return null;
-	}
+    public boolean read(HTTPSocket httpSock)
+    {
+        init();
+        return set(httpSock);
+    }
 
-	public void clearHeaders()
-	{
-		httpHeaderList.clear();
-		httpHeaderList = new Vector();
-	}
-	
-	public boolean hasHeader(String name)
-	{
-		return (getHeader(name) != null) ? true : false;
-	}
+    // //////////////////////////////////////////////
+    // String
+    // //////////////////////////////////////////////
 
-	public void setHeader(String name, String value)
-	{
-		HTTPHeader header = getHeader(name);
-		if (header != null) {
-			header.setValue(value);
-			return;
-		}
-		addHeader(name, value);
-	}
+    private String firstLine = "";
 
-	public void setHeader(String name, int value)
-	{
-		setHeader(name, Integer.toString(value));
-	}
+    private void setFirstLine(String value)
+    {
+        firstLine = value;
+    }
 
-	public void setHeader(String name, long value)
-	{
-		setHeader(name, Long.toString(value));
-	}
-	
-	public void setHeader(HTTPHeader header)
-	{
-		setHeader(header.getName(), header.getValue());
-	}
+    protected String getFirstLine()
+    {
+        return firstLine;
+    }
 
-	public String getHeaderValue(String name)
-	{
-		HTTPHeader header = getHeader(name);
-		if (header == null)
-			return "";
-		return header.getValue();
-	}
+    protected String getFirstLineToken(int num)
+    {
+        StringTokenizer st = new StringTokenizer(firstLine, HTTP.REQEST_LINE_DELIM);
+        String lastToken = "";
+        for (int n = 0; n <= num; n++ )
+        {
+            if (st.hasMoreTokens() == false)
+                return "";
+            lastToken = st.nextToken();
+        }
+        return lastToken;
+    }
 
-	////////////////////////////////////////////////
-	// set*Value
-	////////////////////////////////////////////////
+    public boolean hasFirstLine()
+    {
+        return (0 < firstLine.length()) ? true : false;
+    }
 
-	public void setStringHeader(String name, String value, String startWidth, String endWidth)
-	{
-		String headerValue = value;
-		if (headerValue.startsWith(startWidth) == false)
-			headerValue = startWidth + headerValue;
-		if (headerValue.endsWith(endWidth) == false)
-			headerValue = headerValue + endWidth;
-		setHeader(name, headerValue);
-	}
+    // //////////////////////////////////////////////
+    // Header
+    // //////////////////////////////////////////////
 
-	public void setStringHeader(String name, String value)
-	{
-		setStringHeader(name, value, "\"", "\"");
-	}
-	
-	public String getStringHeaderValue(String name, String startWidth, String endWidth)
-	{
-		String headerValue = getHeaderValue(name);
-		if (headerValue.startsWith(startWidth) == true)
-			headerValue = headerValue.substring(1, headerValue.length());
-		if (headerValue.endsWith(endWidth) == true)
-			headerValue = headerValue.substring(0, headerValue.length()-1);
-		return headerValue;
-	}
-	
-	public String getStringHeaderValue(String name)
-	{
-		return getStringHeaderValue(name, "\"", "\"");
-	}
+    private Vector httpHeaderList = new Vector();
 
-	public void setIntegerHeader(String name, int value)
-	{
-		setHeader(name, Integer.toString(value));
-	}
-	
-	public void setLongHeader(String name, long value)
-	{
-		setHeader(name, Long.toString(value));
-	}
-	
-	public int getIntegerHeaderValue(String name)
-	{
-		HTTPHeader header = getHeader(name);
-		if (header == null)
-			return 0;
-		return StringUtil.toInteger(header.getValue());
-	}
+    public int getNHeaders()
+    {
+        return httpHeaderList.size();
+    }
 
-	public long getLongHeaderValue(String name)
-	{
-		HTTPHeader header = getHeader(name);
-		if (header == null)
-			return 0;
-		return StringUtil.toLong(header.getValue());
-	}
+    public void addHeader(HTTPHeader header)
+    {
+        httpHeaderList.add(header);
+    }
 
-	////////////////////////////////////////////////
-	//	getHeader
-	////////////////////////////////////////////////
-	
-	public String getHeaderString()
-	{
-		StringBuffer str = new StringBuffer();
-	
-		int nHeaders = getNHeaders();
-		for (int n=0; n<nHeaders; n++) {
-			HTTPHeader header = getHeader(n);
-			str.append(header.getName() + ": " + header.getValue() + HTTP.CRLF);
-		}
-		
-		return str.toString();
-	}
+    public void addHeader(String name, String value)
+    {
+        HTTPHeader header = new HTTPHeader(name, value);
+        httpHeaderList.add(header);
+    }
 
-	////////////////////////////////////////////////
-	//	Contents
-	////////////////////////////////////////////////
+    public HTTPHeader getHeader(int n)
+    {
+        return (HTTPHeader) httpHeaderList.get(n);
+    }
 
-	private byte content[] = new byte[0];
-	
-	public void setContent(byte data[], boolean updateWithContentLength)
-	{
-		content = data;
-		if (updateWithContentLength == true)
-			setContentLength(data.length);
-	}
+    public HTTPHeader getHeader(String name)
+    {
+        int nHeaders = getNHeaders();
+        for (int n = 0; n < nHeaders; n++ )
+        {
+            HTTPHeader header = getHeader(n);
+            String headerName = header.getName();
+            if (headerName.equalsIgnoreCase(name) == true)
+                return header;
+        }
+        return null;
+    }
 
-	public void setContent(byte data[])
-	{
-		setContent(data, true);
-	}
-	
-	public void setContent(String data, boolean updateWithContentLength)
-	{
-		setContent(data.getBytes(), updateWithContentLength);
-	}
+    public void clearHeaders()
+    {
+        httpHeaderList.clear();
+        httpHeaderList = new Vector();
+    }
 
-	public void setContent(String data)
-	{
-		setContent(data, true);
-	}
-	
-	public  byte[] getContent()
-	{
-		return content;
-	}
+    public boolean hasHeader(String name)
+    {
+        return (getHeader(name) != null) ? true : false;
+    }
 
-	public  String getContentString()
-	{
-		return new String(content);
-	}
-	
-	public boolean hasContent()
-	{
-		return (content.length > 0) ? true : false;
-	}
+    public void setHeader(String name, String value)
+    {
+        HTTPHeader header = getHeader(name);
+        if (header != null)
+        {
+            header.setValue(value);
+            return;
+        }
+        addHeader(name, value);
+    }
 
-	////////////////////////////////////////////////
-	//	Contents (InputStream)
-	////////////////////////////////////////////////
+    public void setHeader(String name, int value)
+    {
+        setHeader(name, Integer.toString(value));
+    }
 
-	private InputStream contentInput = null;
-	
-	public void setContentInputStream(InputStream in)
-	{
-		contentInput = in;
-	}
+    public void setHeader(String name, long value)
+    {
+        setHeader(name, Long.toString(value));
+    }
 
-	public InputStream getContentInputStream()
-	{
-		return contentInput;
-	}
+    public void setHeader(HTTPHeader header)
+    {
+        setHeader(header.getName(), header.getValue());
+    }
 
-	public boolean hasContentInputStream()
-	{
-		return (contentInput != null) ? true : false;
-	}
+    public String getHeaderValue(String name)
+    {
+        HTTPHeader header = getHeader(name);
+        if (header == null)
+            return "";
+        return header.getValue();
+    }
 
-	////////////////////////////////////////////////
-	//	ContentType
-	////////////////////////////////////////////////
+    // //////////////////////////////////////////////
+    // set*Value
+    // //////////////////////////////////////////////
 
-	public void setContentType(String type)
-	{
-		setHeader(HTTP.CONTENT_TYPE, type);
-	}
+    public void setStringHeader(String name, String value, String startWidth, String endWidth)
+    {
+        String headerValue = value;
+        if (headerValue.startsWith(startWidth) == false)
+            headerValue = startWidth + headerValue;
+        if (headerValue.endsWith(endWidth) == false)
+            headerValue = headerValue + endWidth;
+        setHeader(name, headerValue);
+    }
 
-	public String getContentType()
-	{
-		return getHeaderValue(HTTP.CONTENT_TYPE);
-	}
+    public void setStringHeader(String name, String value)
+    {
+        setStringHeader(name, value, "\"", "\"");
+    }
 
-	////////////////////////////////////////////////
-	//	ContentLength
-	////////////////////////////////////////////////
+    public String getStringHeaderValue(String name, String startWidth, String endWidth)
+    {
+        String headerValue = getHeaderValue(name);
+        if (headerValue.startsWith(startWidth) == true)
+            headerValue = headerValue.substring(1, headerValue.length());
+        if (headerValue.endsWith(endWidth) == true)
+            headerValue = headerValue.substring(0, headerValue.length() - 1);
+        return headerValue;
+    }
 
-	public void setContentLength(long len)
-	{
-		setLongHeader(HTTP.CONTENT_LENGTH, len);
-	}
+    public String getStringHeaderValue(String name)
+    {
+        return getStringHeaderValue(name, "\"", "\"");
+    }
 
-	public long getContentLength()
-	{
-		return getLongHeaderValue(HTTP.CONTENT_LENGTH);
-	}
+    public void setIntegerHeader(String name, int value)
+    {
+        setHeader(name, Integer.toString(value));
+    }
 
-	////////////////////////////////////////////////
-	//	Connection
-	////////////////////////////////////////////////
+    public void setLongHeader(String name, long value)
+    {
+        setHeader(name, Long.toString(value));
+    }
 
-	public boolean hasConnection()
-	{
-		return hasHeader(HTTP.CONNECTION);
-	}
+    public int getIntegerHeaderValue(String name)
+    {
+        HTTPHeader header = getHeader(name);
+        if (header == null)
+            return 0;
+        return StringUtil.toInteger(header.getValue());
+    }
 
-	public void setConnection(String value)
-	{
-		setHeader(HTTP.CONNECTION, value);
-	}
+    public long getLongHeaderValue(String name)
+    {
+        HTTPHeader header = getHeader(name);
+        if (header == null)
+            return 0;
+        return StringUtil.toLong(header.getValue());
+    }
 
-	public String getConnection()
-	{
-		return getHeaderValue(HTTP.CONNECTION);
-	}
+    // //////////////////////////////////////////////
+    // getHeader
+    // //////////////////////////////////////////////
 
-	public boolean isCloseConnection()
-	{	
-		if (hasConnection() == false)
-			return false;
-		String connection = getConnection();
-		if (connection == null)
-			return false;
-		return connection.equalsIgnoreCase(HTTP.CLOSE);
-	}
+    public String getHeaderString()
+    {
+        StringBuffer str = new StringBuffer();
 
-	public boolean isKeepAliveConnection()
-	{	
-		if (hasConnection() == false)
-			return false;
-		String connection = getConnection();
-		if (connection == null)
-			return false;
-		return connection.equalsIgnoreCase(HTTP.KEEP_ALIVE);
-	}
-	
-	////////////////////////////////////////////////
-	//	ContentRange
-	////////////////////////////////////////////////
+        int nHeaders = getNHeaders();
+        for (int n = 0; n < nHeaders; n++ )
+        {
+            HTTPHeader header = getHeader(n);
+            str.append(header.getName() + ": " + header.getValue() + HTTP.CRLF);
+        }
 
-	public boolean hasContentRange()
-	{
-		return (hasHeader(HTTP.CONTENT_RANGE) || hasHeader(HTTP.RANGE));
-	}
-	
-	public void setContentRange(long firstPos, long lastPos, long length)
-	{
-		String rangeStr = "";
-		rangeStr += HTTP.CONTENT_RANGE_BYTES + " ";
-		rangeStr += Long.toString(firstPos) + "-";
-		rangeStr += Long.toString(lastPos) + "/";
-		rangeStr += ((0 < length) ? Long.toString(length) : "*");
-		setHeader(HTTP.CONTENT_RANGE, rangeStr);
-	}
+        return str.toString();
+    }
 
-	public long[] getContentRange()
-	{
-		long range[] = new long[3];
-		range[0] = range[1] = range[2] = 0;
-		if (hasContentRange() == false)
-			return range;
-		String rangeLine = getHeaderValue(HTTP.CONTENT_RANGE);
-		// Thanks for Brent Hills (10/20/04)
-		if (rangeLine.length() <= 0)
-			rangeLine = getHeaderValue(HTTP.RANGE);
-		if (rangeLine.length() <= 0)
-			return range;
-		// Thanks for Brent Hills (10/20/04)
-		StringTokenizer strToken = new StringTokenizer(rangeLine, " =");
-		// Skip bytes
-		if (strToken.hasMoreTokens() == false)
-			return range;
-		String bytesStr = strToken.nextToken(" ");
-		// Get first-byte-pos
-		if (strToken.hasMoreTokens() == false)
-			return range;
-		String firstPosStr = strToken.nextToken(" -");
-		try {
-			range[0] = Long.parseLong(firstPosStr);
-		}
-		catch (NumberFormatException e) {};
-		if (strToken.hasMoreTokens() == false)
-			return range;
-		String lastPosStr = strToken.nextToken("-/");
-		try {
-			range[1] = Long.parseLong(lastPosStr);
-		}
-		catch (NumberFormatException e) {};
-		if (strToken.hasMoreTokens() == false)
-			return range;
-		String lengthStr = strToken.nextToken("/");
-		try {
-			range[2] = Long.parseLong(lengthStr);
-		}
-		catch (NumberFormatException e) {};
-		return range;
-	}
-	
-	public long getContentRangeFirstPosition()
-	{
-		long range[] = getContentRange();
-		return range[0];
-	}
+    // //////////////////////////////////////////////
+    // Contents
+    // //////////////////////////////////////////////
 
-	public long getContentRangeLastPosition()
-	{
-		long range[] = getContentRange();
-		return range[1];
-	}
+    private byte content[] = new byte[0];
 
-	public long getContentRangeInstanceLength()
-	{
-		long range[] = getContentRange();
-		return range[2];
-	}
-	
-	////////////////////////////////////////////////
-	//	CacheControl
-	////////////////////////////////////////////////
+    public void setContent(byte data[], boolean updateWithContentLength)
+    {
+        content = data;
+        if (updateWithContentLength == true)
+            setContentLength(data.length);
+    }
 
-	public void setCacheControl(String directive)
-	{
-		setHeader(HTTP.CACHE_CONTROL, directive);
-	}
-	
-	public void setCacheControl(String directive, int value)
-	{
-		String strVal = directive + "=" + Integer.toString(value);
-		setHeader(HTTP.CACHE_CONTROL, strVal);
-	}
-	
-	public void setCacheControl(int value)
-	{
-		setCacheControl(HTTP.MAX_AGE, value);
-	}
+    public void setContent(byte data[])
+    {
+        setContent(data, true);
+    }
 
-	public String getCacheControl()
-	{
-		return getHeaderValue(HTTP.CACHE_CONTROL);
-	}
+    public void setContent(String data, boolean updateWithContentLength)
+    {
+        setContent(data.getBytes(), updateWithContentLength);
+    }
 
-	////////////////////////////////////////////////
-	//	Server
-	////////////////////////////////////////////////
+    public void setContent(String data)
+    {
+        setContent(data, true);
+    }
 
-	public void setServer(String name)
-	{
-		setHeader(HTTP.SERVER, name);
-	}
+    public byte[] getContent()
+    {
+        return content;
+    }
 
-	public String getServer()
-	{
-		return getHeaderValue(HTTP.SERVER);
-	}
+    public String getContentString()
+    {
+        return new String(content);
+    }
 
-	////////////////////////////////////////////////
-	//	Host
-	////////////////////////////////////////////////
+    public boolean hasContent()
+    {
+        return (content.length > 0) ? true : false;
+    }
 
-	public void setHost(String host, int port)
-	{
-		String hostAddr = host;
-		if (HostInterface.isIPv6Address(host) == true)
-			hostAddr = "[" + host + "]";
-		setHeader(HTTP.HOST, hostAddr + ":" + Integer.toString(port));
-	}
+    // //////////////////////////////////////////////
+    // Contents (InputStream)
+    // //////////////////////////////////////////////
 
-	public String getHost()
-	{
-		return getHeaderValue(HTTP.HOST);
-	}
+    private InputStream contentInput = null;
 
+    public void setContentInputStream(InputStream in)
+    {
+        contentInput = in;
+    }
 
-	////////////////////////////////////////////////
-	//	Date
-	////////////////////////////////////////////////
+    public InputStream getContentInputStream()
+    {
+        return contentInput;
+    }
 
-	public void setDate(Calendar cal)
-	{
-		Date date = new Date(cal);
-		setHeader(HTTP.DATE, date.getDateString());
-	}
+    public boolean hasContentInputStream()
+    {
+        return (contentInput != null) ? true : false;
+    }
 
-	public String getDate()
-	{
-		return getHeaderValue(HTTP.DATE);
-	}
+    // //////////////////////////////////////////////
+    // ContentType
+    // //////////////////////////////////////////////
 
-	////////////////////////////////////////////////
-	//	Connection
-	////////////////////////////////////////////////
+    public void setContentType(String type)
+    {
+        setHeader(HTTP.CONTENT_TYPE, type);
+    }
 
-	public boolean hasTransferEncoding()
-	{
-		return hasHeader(HTTP.TRANSFER_ENCODING);
-	}
+    public String getContentType()
+    {
+        return getHeaderValue(HTTP.CONTENT_TYPE);
+    }
 
-	public void setTransferEncoding(String value)
-	{
-		setHeader(HTTP.TRANSFER_ENCODING, value);
-	}
+    // //////////////////////////////////////////////
+    // ContentLength
+    // //////////////////////////////////////////////
 
-	public String getTransferEncoding()
-	{
-		return getHeaderValue(HTTP.TRANSFER_ENCODING);
-	}
+    public void setContentLength(long len)
+    {
+        setLongHeader(HTTP.CONTENT_LENGTH, len);
+    }
 
-	public boolean isChunked()
-	{	
-		if (hasTransferEncoding() == false)
-			return false;
-		String transEnc = getTransferEncoding();
-		if (transEnc == null)
-			return false;
-		return transEnc.equalsIgnoreCase(HTTP.CHUNKED);
-	}
-	
-	////////////////////////////////////////////////
-	//	set
-	////////////////////////////////////////////////
+    public long getContentLength()
+    {
+        return getLongHeaderValue(HTTP.CONTENT_LENGTH);
+    }
+
+    // //////////////////////////////////////////////
+    // Connection
+    // //////////////////////////////////////////////
+
+    public boolean hasConnection()
+    {
+        return hasHeader(HTTP.CONNECTION);
+    }
+
+    public void setConnection(String value)
+    {
+        setHeader(HTTP.CONNECTION, value);
+    }
+
+    public String getConnection()
+    {
+        return getHeaderValue(HTTP.CONNECTION);
+    }
+
+    public boolean isCloseConnection()
+    {
+        if (hasConnection() == false)
+            return false;
+        String connection = getConnection();
+        if (connection == null)
+            return false;
+        return connection.equalsIgnoreCase(HTTP.CLOSE);
+    }
+
+    public boolean isKeepAliveConnection()
+    {
+        if (hasConnection() == false)
+            return false;
+        String connection = getConnection();
+        if (connection == null)
+            return false;
+        return connection.equalsIgnoreCase(HTTP.KEEP_ALIVE);
+    }
+
+    // //////////////////////////////////////////////
+    // ContentRange
+    // //////////////////////////////////////////////
+
+    public boolean hasContentRange()
+    {
+        return (hasHeader(HTTP.CONTENT_RANGE) || hasHeader(HTTP.RANGE));
+    }
+
+    public void setContentRange(long firstPos, long lastPos, long length)
+    {
+        String rangeStr = "";
+        rangeStr += HTTP.CONTENT_RANGE_BYTES + " ";
+        rangeStr += Long.toString(firstPos) + "-";
+        rangeStr += Long.toString(lastPos) + "/";
+        rangeStr += ((0 < length) ? Long.toString(length) : "*");
+        setHeader(HTTP.CONTENT_RANGE, rangeStr);
+    }
+
+    public long[] getContentRange()
+    {
+        long range[] = new long[3];
+        range[0] = range[1] = range[2] = 0;
+        if (hasContentRange() == false)
+            return range;
+        String rangeLine = getHeaderValue(HTTP.CONTENT_RANGE);
+        // Thanks for Brent Hills (10/20/04)
+        if (rangeLine.length() <= 0)
+            rangeLine = getHeaderValue(HTTP.RANGE);
+        if (rangeLine.length() <= 0)
+            return range;
+        // Thanks for Brent Hills (10/20/04)
+        StringTokenizer strToken = new StringTokenizer(rangeLine, " =");
+        // Skip bytes
+        if (strToken.hasMoreTokens() == false)
+            return range;
+        String bytesStr = strToken.nextToken(" ");
+        // Get first-byte-pos
+        if (strToken.hasMoreTokens() == false)
+            return range;
+        String firstPosStr = strToken.nextToken(" -");
+        try
+        {
+            range[0] = Long.parseLong(firstPosStr);
+        }
+        catch (NumberFormatException e)
+        {
+        }
+        ;
+        if (strToken.hasMoreTokens() == false)
+            return range;
+        String lastPosStr = strToken.nextToken("-/");
+        try
+        {
+            range[1] = Long.parseLong(lastPosStr);
+        }
+        catch (NumberFormatException e)
+        {
+        }
+        ;
+        if (strToken.hasMoreTokens() == false)
+            return range;
+        String lengthStr = strToken.nextToken("/");
+        try
+        {
+            range[2] = Long.parseLong(lengthStr);
+        }
+        catch (NumberFormatException e)
+        {
+        }
+        ;
+        return range;
+    }
+
+    public long getContentRangeFirstPosition()
+    {
+        long range[] = getContentRange();
+        return range[0];
+    }
+
+    public long getContentRangeLastPosition()
+    {
+        long range[] = getContentRange();
+        return range[1];
+    }
+
+    public long getContentRangeInstanceLength()
+    {
+        long range[] = getContentRange();
+        return range[2];
+    }
+
+    // //////////////////////////////////////////////
+    // CacheControl
+    // //////////////////////////////////////////////
+
+    public void setCacheControl(String directive)
+    {
+        setHeader(HTTP.CACHE_CONTROL, directive);
+    }
+
+    public void setCacheControl(String directive, int value)
+    {
+        String strVal = directive + "=" + Integer.toString(value);
+        setHeader(HTTP.CACHE_CONTROL, strVal);
+    }
+
+    public void setCacheControl(int value)
+    {
+        setCacheControl(HTTP.MAX_AGE, value);
+    }
+
+    public String getCacheControl()
+    {
+        return getHeaderValue(HTTP.CACHE_CONTROL);
+    }
+
+    // //////////////////////////////////////////////
+    // Server
+    // //////////////////////////////////////////////
+
+    public void setServer(String name)
+    {
+        setHeader(HTTP.SERVER, name);
+    }
+
+    public String getServer()
+    {
+        return getHeaderValue(HTTP.SERVER);
+    }
+
+    // //////////////////////////////////////////////
+    // Host
+    // //////////////////////////////////////////////
+
+    public void setHost(String host, int port)
+    {
+        String hostAddr = host;
+        if (HostInterface.isIPv6Address(host) == true)
+            hostAddr = "[" + host + "]";
+        setHeader(HTTP.HOST, hostAddr + ":" + Integer.toString(port));
+    }
+
+    public String getHost()
+    {
+        return getHeaderValue(HTTP.HOST);
+    }
+
+    // //////////////////////////////////////////////
+    // Date
+    // //////////////////////////////////////////////
+
+    public void setDate(Calendar cal)
+    {
+        Date date = new Date(cal);
+        setHeader(HTTP.DATE, date.getDateString());
+    }
+
+    public String getDate()
+    {
+        return getHeaderValue(HTTP.DATE);
+    }
+
+    // //////////////////////////////////////////////
+    // Connection
+    // //////////////////////////////////////////////
+
+    public boolean hasTransferEncoding()
+    {
+        return hasHeader(HTTP.TRANSFER_ENCODING);
+    }
+
+    public void setTransferEncoding(String value)
+    {
+        setHeader(HTTP.TRANSFER_ENCODING, value);
+    }
+
+    public String getTransferEncoding()
+    {
+        return getHeaderValue(HTTP.TRANSFER_ENCODING);
+    }
+
+    public boolean isChunked()
+    {
+        if (hasTransferEncoding() == false)
+            return false;
+        String transEnc = getTransferEncoding();
+        if (transEnc == null)
+            return false;
+        return transEnc.equalsIgnoreCase(HTTP.CHUNKED);
+    }
+
+    // //////////////////////////////////////////////
+    // set
+    // //////////////////////////////////////////////
 
 /*
-	public final static boolean parse(HTTPPacket httpPacket, InputStream in)
-	{
- 		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-			return parse(httpPacket, reader);
-		}
-		catch (Exception e) {
-			Debug.warning(e);
-		}
-		return false;
-	}
-*/
+ * public final static boolean parse(HTTPPacket httpPacket, InputStream in) { try { BufferedReader
+ * reader = new BufferedReader(new InputStreamReader(in)); return parse(httpPacket, reader); } catch
+ * (Exception e) { Debug.warning(e); } return false; }
+ */
 }
-

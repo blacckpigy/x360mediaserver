@@ -1,413 +1,444 @@
 /******************************************************************
-*
-*	CyberXML for Java
-*
-*	Copyright (C) Satoshi Konno 2002
-*
-*	File: Element.java
-*
-*	Revision;
-*
-*	11/27/02
-*		- first revision.
-*	11/01/03
-*		- Terje Bakken
-*		- fixed missing escaping of reserved XML characters
-*	11/19/04
-*		- Theo Beisch <theo.beisch@gmx.de>
-*		- Added "&" and "\"" "\\" to toXMLString().
-*	11/19/04
-*		- Theo Beisch <theo.beisch@gmx.de>
-*		- Changed XML::output() to use short notation when the tag value is null.
-*	12/02/04
-*		- Brian Owens <brian@b-owens.com>
-*		- Fixed toXMLString() to convert from "'" to "&apos;" instead of "\".
-*
-******************************************************************/
+ *
+ *	CyberXML for Java
+ *
+ *	Copyright (C) Satoshi Konno 2002
+ *
+ *	File: Element.java
+ *
+ *	Revision;
+ *
+ *	11/27/02
+ *		- first revision.
+ *	11/01/03
+ *		- Terje Bakken
+ *		- fixed missing escaping of reserved XML characters
+ *	11/19/04
+ *		- Theo Beisch <theo.beisch@gmx.de>
+ *		- Added "&" and "\"" "\\" to toXMLString().
+ *	11/19/04
+ *		- Theo Beisch <theo.beisch@gmx.de>
+ *		- Changed XML::output() to use short notation when the tag value is null.
+ *	12/02/04
+ *		- Brian Owens <brian@b-owens.com>
+ *		- Fixed toXMLString() to convert from "'" to "&apos;" instead of "\".
+ *
+ ******************************************************************/
 
 package org.cybergarage.xml;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
 
-public class Node 
+public class Node
 {
 
-	public Node() 
-	{
-		setUserData(null);
-		setParentNode(null);
-	}
+    public Node()
+    {
+        setUserData(null);
+        setParentNode(null);
+    }
 
-	public Node(String name) 
-	{
-		this();
-		setName(name);
-	}
+    public Node(String name)
+    {
+        this();
+        setName(name);
+    }
 
-	public Node(String ns, String name) 
-	{
-		this();
-		setName(ns, name);
-	}
+    public Node(String ns, String name)
+    {
+        this();
+        setName(ns, name);
+    }
 
-	////////////////////////////////////////////////
-	//	parent node
-	////////////////////////////////////////////////
+    // //////////////////////////////////////////////
+    // parent node
+    // //////////////////////////////////////////////
 
-	private Node parentNode = null; 
-	
-	public void setParentNode(Node node) 
-	{
-		parentNode = node;
-	}
+    private Node parentNode = null;
 
-	public Node getParentNode() 
-	{
-		return parentNode;
-	}
+    public void setParentNode(Node node)
+    {
+        parentNode = node;
+    }
 
-	////////////////////////////////////////////////
-	//	root node
-	////////////////////////////////////////////////
+    public Node getParentNode()
+    {
+        return parentNode;
+    }
 
-	public Node getRootNode() 
-	{
-		Node rootNode = null;
-		Node parentNode = getParentNode();
-		while (parentNode != null) {
-			 rootNode = parentNode;
-			 parentNode = rootNode.getParentNode();
-		}
-		return rootNode;
-	}
+    // //////////////////////////////////////////////
+    // root node
+    // //////////////////////////////////////////////
 
-	////////////////////////////////////////////////
-	//	name
-	////////////////////////////////////////////////
+    public Node getRootNode()
+    {
+        Node rootNode = null;
+        Node parentNode = getParentNode();
+        while (parentNode != null)
+        {
+            rootNode = parentNode;
+            parentNode = rootNode.getParentNode();
+        }
+        return rootNode;
+    }
 
-	private String name = new String(); 
-	
-	public void setName(String name) 
-	{
-		this.name = name;
-	}
+    // //////////////////////////////////////////////
+    // name
+    // //////////////////////////////////////////////
 
-	public void setName(String ns, String name) 
-	{
-		this.name = ns + ":" + name;
-	}
+    private String name = new String();
 
-	public String getName() 
-	{
-		return name;
-	}
+    public void setName(String name)
+    {
+        this.name = name;
+    }
 
-	public boolean isName(String value)
-	{
-		return name.equals(value);	
-	}
-	
-	////////////////////////////////////////////////
-	//	value
-	////////////////////////////////////////////////
+    public void setName(String ns, String name)
+    {
+        this.name = ns + ":" + name;
+    }
 
-	private String value = new String(); 
-	
-	public void setValue(String value) 
-	{
-		this.value = value;
-	}
+    public String getName()
+    {
+        return name;
+    }
 
-	public void setValue(int value) 
-	{
-		setValue(Integer.toString(value));
-	}
+    public boolean isName(String value)
+    {
+        return name.equals(value);
+    }
 
-	public String getValue() 
-	{
-		return value;
-	}
+    // //////////////////////////////////////////////
+    // value
+    // //////////////////////////////////////////////
 
-	////////////////////////////////////////////////
-	//	Attribute (Basic)
-	////////////////////////////////////////////////
+    private String value = new String();
 
-	private AttributeList attrList = new AttributeList();
+    public void setValue(String value)
+    {
+        this.value = value;
+    }
 
-	public int getNAttributes() {
-		return attrList.size();
-	}
+    public void setValue(int value)
+    {
+        setValue(Integer.toString(value));
+    }
 
-	public Attribute getAttribute(int index) {
-		return attrList.getAttribute(index);
-	}
+    public String getValue()
+    {
+        return value;
+    }
 
-	public Attribute getAttribute(String name) 
-	{
-		return attrList.getAttribute(name);
-	}
+    // //////////////////////////////////////////////
+    // Attribute (Basic)
+    // //////////////////////////////////////////////
 
-	public void addAttribute(Attribute attr) {
-		attrList.add(attr);
-	}
+    private AttributeList attrList = new AttributeList();
 
-	public void insertAttributeAt(Attribute attr, int index) {
-		attrList.insertElementAt(attr, index);
-	}
+    public int getNAttributes()
+    {
+        return attrList.size();
+    }
 
-	public void addAttribute(String name, String value) {
-		Attribute attr = new Attribute(name, value);
-		addAttribute(attr);
-	}
+    public Attribute getAttribute(int index)
+    {
+        return attrList.getAttribute(index);
+    }
 
-	public boolean removeAttribute(Attribute attr) {
-		return attrList.remove(attr);
-	}
+    public Attribute getAttribute(String name)
+    {
+        return attrList.getAttribute(name);
+    }
 
-	public boolean removeAttribute(String name) {
-		return removeAttribute(getAttribute(name));
-	}
+    public void addAttribute(Attribute attr)
+    {
+        attrList.add(attr);
+    }
 
-	public boolean hasAttributes()
-	{
-		if (0 < getNAttributes())
-			return true;
-		return false;
-	}
+    public void insertAttributeAt(Attribute attr, int index)
+    {
+        attrList.insertElementAt(attr, index);
+    }
 
-	////////////////////////////////////////////////
-	//	Attribute (Extention)
-	////////////////////////////////////////////////
+    public void addAttribute(String name, String value)
+    {
+        Attribute attr = new Attribute(name, value);
+        addAttribute(attr);
+    }
 
-	public void setAttribute(String name, String value) {
-		Attribute attr = getAttribute(name);
-		if (attr != null) {
-			attr.setValue(value);
-			return;
-		}
-		attr = new Attribute(name, value);
-		addAttribute(attr);
-	}
+    public boolean removeAttribute(Attribute attr)
+    {
+        return attrList.remove(attr);
+    }
 
-	public void setAttribute(String name, int value) {
-		setAttribute(name, Integer.toString(value));
-	}
+    public boolean removeAttribute(String name)
+    {
+        return removeAttribute(getAttribute(name));
+    }
 
-	public String getAttributeValue(String name) {
-		Attribute attr = getAttribute(name);
-		if (attr != null)
-			return attr.getValue();
-		return "";
-	}
+    public boolean hasAttributes()
+    {
+        if (0 < getNAttributes())
+            return true;
+        return false;
+    }
 
-	public int getAttributeIntegerValue(String name) {
-		String val = getAttributeValue(name);
-		try {
-			return Integer.parseInt(val);
-		}
-		catch (Exception e) {}
-		return 0;
-	}
-	
-	////////////////////////////////////////////////
-	//	Attribute (xmlns)
-	////////////////////////////////////////////////
+    // //////////////////////////////////////////////
+    // Attribute (Extention)
+    // //////////////////////////////////////////////
 
-	public void setNameSpace(String ns, String value) 
-	{
-		setAttribute("xmlns:" + ns, value);
-	}
-		
-	////////////////////////////////////////////////
-	//	Child node
-	////////////////////////////////////////////////
+    public void setAttribute(String name, String value)
+    {
+        Attribute attr = getAttribute(name);
+        if (attr != null)
+        {
+            attr.setValue(value);
+            return;
+        }
+        attr = new Attribute(name, value);
+        addAttribute(attr);
+    }
 
-	private NodeList nodeList = new NodeList();
+    public void setAttribute(String name, int value)
+    {
+        setAttribute(name, Integer.toString(value));
+    }
 
-	public int getNNodes() {
-		return nodeList.size();
-	}
+    public String getAttributeValue(String name)
+    {
+        Attribute attr = getAttribute(name);
+        if (attr != null)
+            return attr.getValue();
+        return "";
+    }
 
-	public Node getNode(int index) {
-		return nodeList.getNode(index);
-	}
+    public int getAttributeIntegerValue(String name)
+    {
+        String val = getAttributeValue(name);
+        try
+        {
+            return Integer.parseInt(val);
+        }
+        catch (Exception e)
+        {
+        }
+        return 0;
+    }
 
-	public Node getNode(String name) 
-	{
-		return nodeList.getNode(name);
-	}
-	
-	public Node getNodeEndsWith(String name) 
-	{
-		return nodeList.getEndsWith(name);
-	}
+    // //////////////////////////////////////////////
+    // Attribute (xmlns)
+    // //////////////////////////////////////////////
 
-	public void addNode(Node node) {
-		node.setParentNode(this);
-		nodeList.add(node);
-	}
+    public void setNameSpace(String ns, String value)
+    {
+        setAttribute("xmlns:" + ns, value);
+    }
 
-	public void insertNode(Node node, int index) {
-		node.setParentNode(this);
-		nodeList.insertElementAt(node, index);
-	}
+    // //////////////////////////////////////////////
+    // Child node
+    // //////////////////////////////////////////////
 
-	public boolean removeNode(Node node) {
-		node.setParentNode(null);
-		return nodeList.remove(node);
-	}
+    private NodeList nodeList = new NodeList();
 
-	public boolean removeNode(String name) {
-		return nodeList.remove(getNode(name));
-	}
+    public int getNNodes()
+    {
+        return nodeList.size();
+    }
 
-	public void removeAllNodes()
-	{
-		nodeList.clear();
-	}
-	
-	public boolean hasNodes()
-	{
-		if (0 < getNNodes())
-			return true;
-		return false;
-	}
-	
-	////////////////////////////////////////////////
-	//	Element (Child Node)
-	////////////////////////////////////////////////
+    public Node getNode(int index)
+    {
+        return nodeList.getNode(index);
+    }
 
-	public void setNode(String name, String value) {
-		Node node = getNode(name);
-		if (node != null) {
-			node.setValue(value);
-			return;
-		}
-		node = new Node(name);
-		node.setValue(value);
-		addNode(node);
-	}
+    public Node getNode(String name)
+    {
+        return nodeList.getNode(name);
+    }
 
-	public String getNodeValue(String name) {
-		Node node = getNode(name);
-		if (node != null)
-			return node.getValue();
-		return "";
-	}
+    public Node getNodeEndsWith(String name)
+    {
+        return nodeList.getEndsWith(name);
+    }
 
-	////////////////////////////////////////////////
-	//	userData
-	////////////////////////////////////////////////
+    public void addNode(Node node)
+    {
+        node.setParentNode(this);
+        nodeList.add(node);
+    }
 
-	private Object userData = null; 
-	
-	public void setUserData(Object data) 
-	{
-		userData = data;
-	}
+    public void insertNode(Node node, int index)
+    {
+        node.setParentNode(this);
+        nodeList.insertElementAt(node, index);
+    }
 
-	public Object getUserData() 
-	{
-		return userData;
-	}
+    public boolean removeNode(Node node)
+    {
+        node.setParentNode(null);
+        return nodeList.remove(node);
+    }
 
-	
-	////////////////////////////////////////////////
-	//	toString 
-	////////////////////////////////////////////////
+    public boolean removeNode(String name)
+    {
+        return nodeList.remove(getNode(name));
+    }
 
-	public String getIndentLevelString(int nIndentLevel) 
-	{
-		char indentString[] = new char[nIndentLevel];
-		for (int n=0; n<nIndentLevel; n++)
-			indentString[n] = '\t' ;
-		return new String(indentString);
-	}
+    public void removeAllNodes()
+    {
+        nodeList.clear();
+    }
 
-	public void outputAttributes(PrintWriter ps)
-	{
-		int nAttributes = getNAttributes();
-		for (int n=0; n<nAttributes; n++) {
-			Attribute attr = getAttribute(n);
-			ps.print(" " + attr.getName() + "=\"" + XML.escapeXMLChars(attr.getValue()) + "\"");
-		}
-	}
+    public boolean hasNodes()
+    {
+        if (0 < getNNodes())
+            return true;
+        return false;
+    }
 
-	public void output(PrintWriter ps, int indentLevel, boolean hasChildNode) 
-	{
-		String indentString = getIndentLevelString(indentLevel);
+    // //////////////////////////////////////////////
+    // Element (Child Node)
+    // //////////////////////////////////////////////
 
-		String name = getName();
-		String value = getValue();
+    public void setNode(String name, String value)
+    {
+        Node node = getNode(name);
+        if (node != null)
+        {
+            node.setValue(value);
+            return;
+        }
+        node = new Node(name);
+        node.setValue(value);
+        addNode(node);
+    }
 
-		if (hasNodes() == false || hasChildNode == false) {		
-			ps.print(indentString + "<" + name);
-			outputAttributes(ps);
-			// Thnaks for Tho Beisch (11/09/04)
-			if (value == null || value.length() == 0) {
-				// No value, so use short notation <node />
-				ps.println(" />");
-			} else {
-				ps.println(">" + XML.escapeXMLChars(value) + "</" + name + ">");
-			}
-			
-			return;
-		}
-		
-		ps.print(indentString + "<" + name);
-		outputAttributes(ps);
-		ps.println(">");
-	
-		int nChildNodes = getNNodes();
-		for (int n=0; n<nChildNodes; n++) {
-			Node cnode = getNode(n);
-			cnode.output(ps, indentLevel+1, true);
-		}
+    public String getNodeValue(String name)
+    {
+        Node node = getNode(name);
+        if (node != null)
+            return node.getValue();
+        return "";
+    }
 
-		ps.println(indentString +"</" + name + ">");
-	}
+    // //////////////////////////////////////////////
+    // userData
+    // //////////////////////////////////////////////
 
-	public String toString(boolean hasChildNode)
-	{
-		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-		PrintWriter pr = new PrintWriter(byteOut);
-		output(pr, 0, hasChildNode);
-		pr.flush();
-		return byteOut.toString();
-	}
-		
-	public String toString()
-	{
-		return toString(true);
-	}
-	
-	public String toXMLString(boolean hasChildNode)
-	{
-		String xmlStr = toString();
-		xmlStr = xmlStr.replaceAll("<", "&lt;");	
-		xmlStr = xmlStr.replaceAll(">", "&gt;");	
-		// Thanks for Theo Beisch (11/09/04)
-		xmlStr = xmlStr.replaceAll("&", "&amp;");	
-		xmlStr = xmlStr.replaceAll("\"", "&quot;");	
-		// Thanks for Brian Owens (12/02/04)
-		xmlStr = xmlStr.replaceAll("'", "&apos;");	
-		return xmlStr;
-	}
+    private Object userData = null;
 
-	public String toXMLString()
-	{
-		return toXMLString(true);
-	}
-	
-	public void print(boolean hasChildNode)
-	{
-		PrintWriter pr = new PrintWriter(System.out);
-		output(pr, 0, hasChildNode);
-		pr.flush();
-	}
+    public void setUserData(Object data)
+    {
+        userData = data;
+    }
 
-	public void print()
-	{
-		print(true);
-	}
+    public Object getUserData()
+    {
+        return userData;
+    }
+
+    // //////////////////////////////////////////////
+    // toString
+    // //////////////////////////////////////////////
+
+    public String getIndentLevelString(int nIndentLevel)
+    {
+        char indentString[] = new char[nIndentLevel];
+        for (int n = 0; n < nIndentLevel; n++ )
+            indentString[n] = '\t';
+        return new String(indentString);
+    }
+
+    public void outputAttributes(PrintWriter ps)
+    {
+        int nAttributes = getNAttributes();
+        for (int n = 0; n < nAttributes; n++ )
+        {
+            Attribute attr = getAttribute(n);
+            ps.print(" " + attr.getName() + "=\"" + XML.escapeXMLChars(attr.getValue()) + "\"");
+        }
+    }
+
+    public void output(PrintWriter ps, int indentLevel, boolean hasChildNode)
+    {
+        String indentString = getIndentLevelString(indentLevel);
+
+        String name = getName();
+        String value = getValue();
+
+        if (hasNodes() == false || hasChildNode == false)
+        {
+            ps.print(indentString + "<" + name);
+            outputAttributes(ps);
+            // Thnaks for Tho Beisch (11/09/04)
+            if (value == null || value.length() == 0)
+            {
+                // No value, so use short notation <node />
+                ps.println(" />");
+            }
+            else
+            {
+                ps.println(">" + XML.escapeXMLChars(value) + "</" + name + ">");
+            }
+
+            return;
+        }
+
+        ps.print(indentString + "<" + name);
+        outputAttributes(ps);
+        ps.println(">");
+
+        int nChildNodes = getNNodes();
+        for (int n = 0; n < nChildNodes; n++ )
+        {
+            Node cnode = getNode(n);
+            cnode.output(ps, indentLevel + 1, true);
+        }
+
+        ps.println(indentString + "</" + name + ">");
+    }
+
+    public String toString(boolean hasChildNode)
+    {
+        ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+        PrintWriter pr = new PrintWriter(byteOut);
+        output(pr, 0, hasChildNode);
+        pr.flush();
+        return byteOut.toString();
+    }
+
+    public String toString()
+    {
+        return toString(true);
+    }
+
+    public String toXMLString(boolean hasChildNode)
+    {
+        String xmlStr = toString();
+        xmlStr = xmlStr.replaceAll("<", "&lt;");
+        xmlStr = xmlStr.replaceAll(">", "&gt;");
+        // Thanks for Theo Beisch (11/09/04)
+        xmlStr = xmlStr.replaceAll("&", "&amp;");
+        xmlStr = xmlStr.replaceAll("\"", "&quot;");
+        // Thanks for Brian Owens (12/02/04)
+        xmlStr = xmlStr.replaceAll("'", "&apos;");
+        return xmlStr;
+    }
+
+    public String toXMLString()
+    {
+        return toXMLString(true);
+    }
+
+    public void print(boolean hasChildNode)
+    {
+        PrintWriter pr = new PrintWriter(System.out);
+        output(pr, 0, hasChildNode);
+        pr.flush();
+    }
+
+    public void print()
+    {
+        print(true);
+    }
 }

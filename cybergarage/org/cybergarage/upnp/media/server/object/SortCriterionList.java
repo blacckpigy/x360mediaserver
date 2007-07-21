@@ -1,31 +1,29 @@
 /******************************************************************
-*
-*	MediaServer for CyberLink
-*
-*	Copyright (C) Satoshi Konno 2003-2004
-*
-*	File: SortCriterionList.java
-*
-*	Revision:
-*
-*	04/06/04
-*		- first revision.
-*
-******************************************************************/
+ *
+ *	MediaServer for CyberLink
+ *
+ *	Copyright (C) Satoshi Konno 2003-2004
+ *
+ *	File: SortCriterionList.java
+ *
+ *	Revision:
+ *
+ *	04/06/04
+ *		- first revision.
+ *
+ ******************************************************************/
 
 package org.cybergarage.upnp.media.server.object;
 
-import java.util.*;
+import java.util.Vector;
 
-public class SortCriterionList extends Vector 
+public class SortCriterionList extends Vector
 {
-	public SortCriterionList() 
-	{
-	}
-	
-	public String getSortCriterion(int n)
-	{
-		return (String)get(n);
-	}
-}
+    public SortCriterionList()
+    {}
 
+    public String getSortCriterion(int n)
+    {
+        return (String) get(n);
+    }
+}

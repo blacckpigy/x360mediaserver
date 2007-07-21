@@ -1,204 +1,205 @@
 /******************************************************************
-*
-*	MediaServer for CyberLink
-*
-*	Copyright (C) Satoshi Konno 2003
-*
-*	File : ConnectionManager
-*
-*	Revision:
-*
-*	10/22/03
-*		- first revision.
-*	06/19/04
-*		- Added getCurrentConnectionIDs() and getCurrentConnectionInfo();
-*	12/02/04
-*		- Brian Owens <brian@b-owens.com>
-*		- Fixed to initialize conInfoList.
-*
-******************************************************************/
+ *
+ *	MediaServer for CyberLink
+ *
+ *	Copyright (C) Satoshi Konno 2003
+ *
+ *	File : ConnectionManager
+ *
+ *	Revision:
+ *
+ *	10/22/03
+ *		- first revision.
+ *	06/19/04
+ *		- Added getCurrentConnectionIDs() and getCurrentConnectionInfo();
+ *	12/02/04
+ *		- Brian Owens <brian@b-owens.com>
+ *		- Fixed to initialize conInfoList.
+ *
+ ******************************************************************/
 
 package org.cybergarage.upnp.media.server;
-
-import org.cybergarage.util.*;
-import org.cybergarage.upnp.*;
-import org.cybergarage.upnp.control.*;
-import org.cybergarage.upnp.media.server.object.*;
 
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.cybergarage.upnp.Action;
+import org.cybergarage.upnp.StateVariable;
+import org.cybergarage.upnp.control.ActionListener;
+import org.cybergarage.upnp.control.QueryListener;
+import org.cybergarage.upnp.media.server.object.Format;
+import org.cybergarage.util.Mutex;
+
 public class ConnectionManager implements ActionListener, QueryListener
 {
-    ////////////////////////////////////////////////
+    // //////////////////////////////////////////////
     // Constants
-    ////////////////////////////////////////////////
+    // //////////////////////////////////////////////
 
-    public final static String SERVICE_TYPE = "urn:schemas-upnp-org:service:ConnectionManager:1";
+    public final static String SERVICE_TYPE                = "urn:schemas-upnp-org:service:ConnectionManager:1";
 
     // Browse Action
 
-    public final static String HTTP_GET = "http-get";
+    public final static String HTTP_GET                    = "http-get";
 
-    public final static String GET_PROTOCOL_INFO = "GetProtocolInfo";
-    public final static String SOURCE = "Source";
-    public final static String SINK= "Sink";
+    public final static String GET_PROTOCOL_INFO           = "GetProtocolInfo";
+    public final static String SOURCE                      = "Source";
+    public final static String SINK                        = "Sink";
 
-    public final static String PREPARE_FOR_CONNECTION = "PrepareForConnection";
-    public final static String REMOTE_PROTOCOL_INFO= "RemoteProtocolInfo";
-    public final static String PEER_CONNECTION_MANAGER = "PeerConnectionManager";
-    public final static String PEER_CONNECTION_ID = "PeerConnectionID";
-    public final static String DIRECTION = "Direction";
-    public final static String CONNECTION_ID = "ConnectionID";
-    public final static String AV_TRNSPORT_ID = "AVTransportID";
-    public final static String RCS_ID = "RcsID";
+    public final static String PREPARE_FOR_CONNECTION      = "PrepareForConnection";
+    public final static String REMOTE_PROTOCOL_INFO        = "RemoteProtocolInfo";
+    public final static String PEER_CONNECTION_MANAGER     = "PeerConnectionManager";
+    public final static String PEER_CONNECTION_ID          = "PeerConnectionID";
+    public final static String DIRECTION                   = "Direction";
+    public final static String CONNECTION_ID               = "ConnectionID";
+    public final static String AV_TRNSPORT_ID              = "AVTransportID";
+    public final static String RCS_ID                      = "RcsID";
 
-    public final static String CONNECTION_COMPLETE = "ConnectionComplete";
+    public final static String CONNECTION_COMPLETE         = "ConnectionComplete";
 
-    public final static String GET_CURRENT_CONNECTION_IDS = "GetCurrentConnectionIDs";
-    public final static String CONNECTION_IDS = "ConnectionIDs";
+    public final static String GET_CURRENT_CONNECTION_IDS  = "GetCurrentConnectionIDs";
+    public final static String CONNECTION_IDS              = "ConnectionIDs";
 
     public final static String GET_CURRENT_CONNECTION_INFO = "GetCurrentConnectionInfo";
-    public final static String PROTOCOL_INFO= "ProtocolInfo";
-    public final static String STATUS = "Status";
+    public final static String PROTOCOL_INFO               = "ProtocolInfo";
+    public final static String STATUS                      = "Status";
 
-    public final static String SCPD =
-        "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-        "<scpd xmlns=\"urn:schemas-upnp-org:service-1-0\">\n" +
-        "   <specVersion>\n" +
-        "      <major>1</major>\n" +
-        "      <minor>0</minor>\n" +
-        "	</specVersion>\n" +
-        "	<actionList>\n" +
-        "		<action>\n" +
-        "         <name>GetCurrentConnectionInfo</name>\n" +
-        "         <argumentList>\n" +
-        "            <argument>\n" +
-        "               <name>ConnectionID</name>\n" +
-        "               <direction>in</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_ConnectionID</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>RcsID</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_RcsID</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>AVTransportID</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_AVTransportID</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>ProtocolInfo</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_ProtocolInfo</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>PeerConnectionManager</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_ConnectionManager</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>PeerConnectionID</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_ConnectionID</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>Direction</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_Direction</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>Status</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>A_ARG_TYPE_ConnectionStatus</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "         </argumentList>\n" +
-        "      </action>\n" +
-        "      <action>\n" +
-        "         <name>GetProtocolInfo</name>\n" +
-        "         <argumentList>\n" +
-        "            <argument>\n" +
-        "               <name>Source</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>SourceProtocolInfo</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "            <argument>\n" +
-        "               <name>Sink</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>SinkProtocolInfo</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "         </argumentList>\n" +
-        "      </action>\n" +
-        "      <action>\n" +
-        "         <name>GetCurrentConnectionIDs</name>\n" +
-        "         <argumentList>\n" +
-        "            <argument>\n" +
-        "               <name>ConnectionIDs</name>\n" +
-        "               <direction>out</direction>\n" +
-        "               <relatedStateVariable>CurrentConnectionIDs</relatedStateVariable>\n" +
-        "            </argument>\n" +
-        "         </argumentList>\n" +
-        "      </action>\n" +
-        "   </actionList>\n" +
-        "   <serviceStateTable>\n" +
-        "      <stateVariable sendEvents=\"no\">\n" +
-        "         <name>A_ARG_TYPE_ProtocolInfo</name>\n" +
-        "         <dataType>string</dataType>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"no\">\n" +
-        "         <name>A_ARG_TYPE_ConnectionStatus</name>\n" +
-        "         <dataType>string</dataType>\n" +
-        "         <allowedValueList>\n" +
-        "            <allowedValue>OK</allowedValue>\n" +
-        "            <allowedValue>ContentFormatMismatch</allowedValue>\n" +
-        "            <allowedValue>InsufficientBandwidth</allowedValue>\n" +
-        "            <allowedValue>UnreliableChannel</allowedValue>\n" +
-        "            <allowedValue>Unknown</allowedValue>\n" +
-        "         </allowedValueList>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"no\">\n" +
-        "         <name>A_ARG_TYPE_AVTransportID</name>\n" +
-        "         <dataType>i4</dataType>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"no\">\n" +
-        "         <name>A_ARG_TYPE_RcsID</name>\n" +
-        "         <dataType>i4</dataType>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"no\">\n" +
-        "         <name>A_ARG_TYPE_ConnectionID</name>\n" +
-        "         <dataType>i4</dataType>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"no\">\n" +
-        "         <name>A_ARG_TYPE_ConnectionManager</name>\n" +
-        "         <dataType>string</dataType>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"yes\">\n" +
-        "         <name>SourceProtocolInfo</name>\n" +
-        "         <dataType>string</dataType>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"yes\">\n" +
-        "         <name>SinkProtocolInfo</name>\n" +
-        "         <dataType>string</dataType>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"no\">\n" +
-        "         <name>A_ARG_TYPE_Direction</name>\n" +
-        "         <dataType>string</dataType>\n" +
-        "         <allowedValueList>\n" +
-        "            <allowedValue>Input</allowedValue>\n" +
-        "            <allowedValue>Output</allowedValue>\n" +
-        "         </allowedValueList>\n" +
-        "      </stateVariable>\n" +
-        "      <stateVariable sendEvents=\"yes\">\n" +
-        "         <name>CurrentConnectionIDs</name>\n" +
-        "         <dataType>string</dataType>\n" +
-        "      </stateVariable>\n" +
-        "   </serviceStateTable>\n" +
-        "</scpd>";
+    public final static String SCPD                        = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+                                                             + "<scpd xmlns=\"urn:schemas-upnp-org:service-1-0\">\n"
+                                                             + "   <specVersion>\n"
+                                                             + "      <major>1</major>\n"
+                                                             + "      <minor>0</minor>\n"
+                                                             + "	</specVersion>\n"
+                                                             + "	<actionList>\n"
+                                                             + "		<action>\n"
+                                                             + "         <name>GetCurrentConnectionInfo</name>\n"
+                                                             + "         <argumentList>\n"
+                                                             + "            <argument>\n"
+                                                             + "               <name>ConnectionID</name>\n"
+                                                             + "               <direction>in</direction>\n"
+                                                             + "               <relatedStateVariable>A_ARG_TYPE_ConnectionID</relatedStateVariable>\n"
+                                                             + "            </argument>\n"
+                                                             + "            <argument>\n"
+                                                             + "               <name>RcsID</name>\n"
+                                                             + "               <direction>out</direction>\n"
+                                                             + "               <relatedStateVariable>A_ARG_TYPE_RcsID</relatedStateVariable>\n"
+                                                             + "            </argument>\n"
+                                                             + "            <argument>\n"
+                                                             + "               <name>AVTransportID</name>\n"
+                                                             + "               <direction>out</direction>\n"
+                                                             + "               <relatedStateVariable>A_ARG_TYPE_AVTransportID</relatedStateVariable>\n"
+                                                             + "            </argument>\n"
+                                                             + "            <argument>\n"
+                                                             + "               <name>ProtocolInfo</name>\n"
+                                                             + "               <direction>out</direction>\n"
+                                                             + "               <relatedStateVariable>A_ARG_TYPE_ProtocolInfo</relatedStateVariable>\n"
+                                                             + "            </argument>\n"
+                                                             + "            <argument>\n"
+                                                             + "               <name>PeerConnectionManager</name>\n"
+                                                             + "               <direction>out</direction>\n"
+                                                             + "               <relatedStateVariable>A_ARG_TYPE_ConnectionManager</relatedStateVariable>\n"
+                                                             + "            </argument>\n"
+                                                             + "            <argument>\n"
+                                                             + "               <name>PeerConnectionID</name>\n"
+                                                             + "               <direction>out</direction>\n"
+                                                             + "               <relatedStateVariable>A_ARG_TYPE_ConnectionID</relatedStateVariable>\n"
+                                                             + "            </argument>\n"
+                                                             + "            <argument>\n"
+                                                             + "               <name>Direction</name>\n"
+                                                             + "               <direction>out</direction>\n"
+                                                             + "               <relatedStateVariable>A_ARG_TYPE_Direction</relatedStateVariable>\n"
+                                                             + "            </argument>\n"
+                                                             + "            <argument>\n"
+                                                             + "               <name>Status</name>\n"
+                                                             + "               <direction>out</direction>\n"
+                                                             + "               <relatedStateVariable>A_ARG_TYPE_ConnectionStatus</relatedStateVariable>\n"
+                                                             + "            </argument>\n"
+                                                             + "         </argumentList>\n"
+                                                             + "      </action>\n"
+                                                             + "      <action>\n"
+                                                             + "         <name>GetProtocolInfo</name>\n"
+                                                             + "         <argumentList>\n"
+                                                             + "            <argument>\n"
+                                                             + "               <name>Source</name>\n"
+                                                             + "               <direction>out</direction>\n"
+                                                             + "               <relatedStateVariable>SourceProtocolInfo</relatedStateVariable>\n"
+                                                             + "            </argument>\n"
+                                                             + "            <argument>\n"
+                                                             + "               <name>Sink</name>\n"
+                                                             + "               <direction>out</direction>\n"
+                                                             + "               <relatedStateVariable>SinkProtocolInfo</relatedStateVariable>\n"
+                                                             + "            </argument>\n"
+                                                             + "         </argumentList>\n"
+                                                             + "      </action>\n"
+                                                             + "      <action>\n"
+                                                             + "         <name>GetCurrentConnectionIDs</name>\n"
+                                                             + "         <argumentList>\n"
+                                                             + "            <argument>\n"
+                                                             + "               <name>ConnectionIDs</name>\n"
+                                                             + "               <direction>out</direction>\n"
+                                                             + "               <relatedStateVariable>CurrentConnectionIDs</relatedStateVariable>\n"
+                                                             + "            </argument>\n"
+                                                             + "         </argumentList>\n"
+                                                             + "      </action>\n"
+                                                             + "   </actionList>\n"
+                                                             + "   <serviceStateTable>\n"
+                                                             + "      <stateVariable sendEvents=\"no\">\n"
+                                                             + "         <name>A_ARG_TYPE_ProtocolInfo</name>\n"
+                                                             + "         <dataType>string</dataType>\n"
+                                                             + "      </stateVariable>\n"
+                                                             + "      <stateVariable sendEvents=\"no\">\n"
+                                                             + "         <name>A_ARG_TYPE_ConnectionStatus</name>\n"
+                                                             + "         <dataType>string</dataType>\n"
+                                                             + "         <allowedValueList>\n"
+                                                             + "            <allowedValue>OK</allowedValue>\n"
+                                                             + "            <allowedValue>ContentFormatMismatch</allowedValue>\n"
+                                                             + "            <allowedValue>InsufficientBandwidth</allowedValue>\n"
+                                                             + "            <allowedValue>UnreliableChannel</allowedValue>\n"
+                                                             + "            <allowedValue>Unknown</allowedValue>\n"
+                                                             + "         </allowedValueList>\n"
+                                                             + "      </stateVariable>\n"
+                                                             + "      <stateVariable sendEvents=\"no\">\n"
+                                                             + "         <name>A_ARG_TYPE_AVTransportID</name>\n"
+                                                             + "         <dataType>i4</dataType>\n"
+                                                             + "      </stateVariable>\n"
+                                                             + "      <stateVariable sendEvents=\"no\">\n"
+                                                             + "         <name>A_ARG_TYPE_RcsID</name>\n"
+                                                             + "         <dataType>i4</dataType>\n"
+                                                             + "      </stateVariable>\n"
+                                                             + "      <stateVariable sendEvents=\"no\">\n"
+                                                             + "         <name>A_ARG_TYPE_ConnectionID</name>\n"
+                                                             + "         <dataType>i4</dataType>\n"
+                                                             + "      </stateVariable>\n"
+                                                             + "      <stateVariable sendEvents=\"no\">\n"
+                                                             + "         <name>A_ARG_TYPE_ConnectionManager</name>\n"
+                                                             + "         <dataType>string</dataType>\n"
+                                                             + "      </stateVariable>\n"
+                                                             + "      <stateVariable sendEvents=\"yes\">\n"
+                                                             + "         <name>SourceProtocolInfo</name>\n"
+                                                             + "         <dataType>string</dataType>\n"
+                                                             + "      </stateVariable>\n"
+                                                             + "      <stateVariable sendEvents=\"yes\">\n"
+                                                             + "         <name>SinkProtocolInfo</name>\n"
+                                                             + "         <dataType>string</dataType>\n"
+                                                             + "      </stateVariable>\n"
+                                                             + "      <stateVariable sendEvents=\"no\">\n"
+                                                             + "         <name>A_ARG_TYPE_Direction</name>\n"
+                                                             + "         <dataType>string</dataType>\n"
+                                                             + "         <allowedValueList>\n"
+                                                             + "            <allowedValue>Input</allowedValue>\n"
+                                                             + "            <allowedValue>Output</allowedValue>\n"
+                                                             + "         </allowedValueList>\n"
+                                                             + "      </stateVariable>\n"
+                                                             + "      <stateVariable sendEvents=\"yes\">\n"
+                                                             + "         <name>CurrentConnectionIDs</name>\n"
+                                                             + "         <dataType>string</dataType>\n"
+                                                             + "      </stateVariable>\n"
+                                                             + "   </serviceStateTable>\n"
+                                                             + "</scpd>";
 
-    ////////////////////////////////////////////////
+    // //////////////////////////////////////////////
     // Constructor
-    ////////////////////////////////////////////////
+    // //////////////////////////////////////////////
 
     public ConnectionManager(MediaServer mserver)
     {
@@ -206,9 +207,9 @@ public class ConnectionManager implements ActionListener, QueryListener
         maxConnectionID = 0;
     }
 
-    ////////////////////////////////////////////////
+    // //////////////////////////////////////////////
     // Media Server
-    ////////////////////////////////////////////////
+    // //////////////////////////////////////////////
 
     private MediaServer mediaServer;
 
@@ -227,9 +228,9 @@ public class ConnectionManager implements ActionListener, QueryListener
         return getMediaServer().getContentDirectory();
     }
 
-    ////////////////////////////////////////////////
+    // //////////////////////////////////////////////
     // Mutex
-    ////////////////////////////////////////////////
+    // //////////////////////////////////////////////
 
     private Mutex mutex = new Mutex();
 
@@ -243,26 +244,26 @@ public class ConnectionManager implements ActionListener, QueryListener
         mutex.unlock();
     }
 
-    ////////////////////////////////////////////////
+    // //////////////////////////////////////////////
     // ConnectionID
-    ////////////////////////////////////////////////
+    // //////////////////////////////////////////////
 
     private int maxConnectionID;
 
     public int getNextConnectionID()
     {
         lock();
-        maxConnectionID++;
+        maxConnectionID++ ;
         unlock();
         return maxConnectionID;
     }
 
-    ////////////////////////////////////////////////
+    // //////////////////////////////////////////////
     // ConnectionInfoList
-    ////////////////////////////////////////////////
+    // //////////////////////////////////////////////
 
     // Thanks for Brian Owens (12/02/04)
-    private ConnectionInfoList conInfoList = new ConnectionInfoList();;
+    private ConnectionInfoList conInfoList = new ConnectionInfoList(); ;
 
     public ConnectionInfoList getConnectionInfoList()
     {
@@ -272,7 +273,8 @@ public class ConnectionManager implements ActionListener, QueryListener
     public ConnectionInfo getConnectionInfo(int id)
     {
         int size = conInfoList.size();
-        for (int n=0; n<size; n++) {
+        for (int n = 0; n < size; n++ )
+        {
             ConnectionInfo info = conInfoList.getConnectionInfo(n);
             if (info.getID() == id)
                 return info;
@@ -291,9 +293,11 @@ public class ConnectionManager implements ActionListener, QueryListener
     {
         lock();
         int size = conInfoList.size();
-        for (int n=0; n<size; n++) {
+        for (int n = 0; n < size; n++ )
+        {
             ConnectionInfo info = conInfoList.getConnectionInfo(n);
-            if (info.getID() == id) {
+            if (info.getID() == id)
+            {
                 conInfoList.remove(info);
                 break;
             }
@@ -308,26 +312,28 @@ public class ConnectionManager implements ActionListener, QueryListener
         unlock();
     }
 
-    ////////////////////////////////////////////////
+    // //////////////////////////////////////////////
     // ActionListener
-    ////////////////////////////////////////////////
+    // //////////////////////////////////////////////
 
     public boolean actionControlReceived(Action action)
     {
-        //action.print();
+        // action.print();
 
         String actionName = action.getName();
 
-        if (actionName.equals(GET_PROTOCOL_INFO) == true) {
+        if (actionName.equals(GET_PROTOCOL_INFO) == true)
+        {
             // Source
             String sourceValue = "";
             Collection allFormats = getContentDirectory().getAllFormats();
             int mimeTypeCnt = allFormats.size();
             Iterator it = allFormats.iterator();
-            for (int n=0; n<mimeTypeCnt; n++) {
+            for (int n = 0; n < mimeTypeCnt; n++ )
+            {
                 if (0 < n)
                     sourceValue += ",";
-                Format format = (Format)it.next();
+                Format format = (Format) it.next();
                 String mimeType = format.getMimeType();
                 sourceValue += HTTP_GET + ":*:" + mimeType + ":*";
             }
@@ -337,14 +343,16 @@ public class ConnectionManager implements ActionListener, QueryListener
             return true;
         }
 
-        if (actionName.equals(PREPARE_FOR_CONNECTION) == true) {
-            action.getArgument(CONNECTION_ID).setValue(-1);
-            action.getArgument(AV_TRNSPORT_ID).setValue(-1);
-            action.getArgument(RCS_ID).setValue(-1);
+        if (actionName.equals(PREPARE_FOR_CONNECTION) == true)
+        {
+            action.getArgument(CONNECTION_ID).setValue( -1);
+            action.getArgument(AV_TRNSPORT_ID).setValue( -1);
+            action.getArgument(RCS_ID).setValue( -1);
             return true;
         }
 
-        if (actionName.equals(CONNECTION_COMPLETE) == true) {
+        if (actionName.equals(CONNECTION_COMPLETE) == true)
+        {
             return true;
         }
 
@@ -357,16 +365,17 @@ public class ConnectionManager implements ActionListener, QueryListener
         return false;
     }
 
-    ////////////////////////////////////////////////
+    // //////////////////////////////////////////////
     // GetCurrentConnectionIDs
-    ////////////////////////////////////////////////
+    // //////////////////////////////////////////////
 
     private boolean getCurrentConnectionIDs(Action action)
     {
         String conIDs = "";
         lock();
         int size = conInfoList.size();
-        for (int n=0; n<size; n++) {
+        for (int n = 0; n < size; n++ )
+        {
             ConnectionInfo info = conInfoList.getConnectionInfo(n);
             if (0 < n)
                 conIDs += ",";
@@ -377,16 +386,17 @@ public class ConnectionManager implements ActionListener, QueryListener
         return true;
     }
 
-    ////////////////////////////////////////////////
+    // //////////////////////////////////////////////
     // GetCurrentConnectionInfo
-    ////////////////////////////////////////////////
+    // //////////////////////////////////////////////
 
     private boolean getCurrentConnectionInfo(Action action)
     {
         int id = action.getArgument(RCS_ID).getIntegerValue();
         lock();
         ConnectionInfo info = getConnectionInfo(id);
-        if (info != null) {
+        if (info != null)
+        {
             action.getArgument(RCS_ID).setValue(info.getRcsID());
             action.getArgument(AV_TRNSPORT_ID).setValue(info.getAVTransportID());
             action.getArgument(PEER_CONNECTION_MANAGER).setValue(info.getPeerConnectionManager());
@@ -394,11 +404,12 @@ public class ConnectionManager implements ActionListener, QueryListener
             action.getArgument(DIRECTION).setValue(info.getDirection());
             action.getArgument(STATUS).setValue(info.getStatus());
         }
-        else {
-            action.getArgument(RCS_ID).setValue(-1);
-            action.getArgument(AV_TRNSPORT_ID).setValue(-1);
+        else
+        {
+            action.getArgument(RCS_ID).setValue( -1);
+            action.getArgument(AV_TRNSPORT_ID).setValue( -1);
             action.getArgument(PEER_CONNECTION_MANAGER).setValue("");
-            action.getArgument(PEER_CONNECTION_ID).setValue(-1);
+            action.getArgument(PEER_CONNECTION_ID).setValue( -1);
             action.getArgument(DIRECTION).setValue(ConnectionInfo.OUTPUT);
             action.getArgument(STATUS).setValue(ConnectionInfo.UNKNOWN);
         }
@@ -406,13 +417,12 @@ public class ConnectionManager implements ActionListener, QueryListener
         return true;
     }
 
-    ////////////////////////////////////////////////
+    // //////////////////////////////////////////////
     // QueryListener
-    ////////////////////////////////////////////////
+    // //////////////////////////////////////////////
 
     public boolean queryControlReceived(StateVariable stateVar)
     {
         return false;
     }
 }
-
