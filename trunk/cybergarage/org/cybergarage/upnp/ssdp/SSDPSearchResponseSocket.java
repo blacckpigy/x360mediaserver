@@ -1,106 +1,106 @@
 /******************************************************************
-*
-*	CyberUPnP for Java
-*
-*	Copyright (C) Satoshi Konno 2002
-*
-*	File: SSDPSearchResponseSocket.java
-*
-*	Revision;
-*
-*	11/20/02
-*		- first revision.
-*	05/28/03
-*		- Added post() to send a SSDPSearchRequest.
-*	
-******************************************************************/
+ *
+ *	CyberUPnP for Java
+ *
+ *	Copyright (C) Satoshi Konno 2002
+ *
+ *	File: SSDPSearchResponseSocket.java
+ *
+ *	Revision;
+ *
+ *	11/20/02
+ *		- first revision.
+ *	05/28/03
+ *		- Added post() to send a SSDPSearchRequest.
+ *	
+ ******************************************************************/
 
 package org.cybergarage.upnp.ssdp;
 
-import org.cybergarage.upnp.*;
+import org.cybergarage.upnp.ControlPoint;
 
 public class SSDPSearchResponseSocket extends HTTPUSocket implements Runnable
 {
-	////////////////////////////////////////////////
-	//	Constructor
-	////////////////////////////////////////////////
+    // //////////////////////////////////////////////
+    // Constructor
+    // //////////////////////////////////////////////
 
-	public SSDPSearchResponseSocket()
-	{
-		setControlPoint(null);
-	}
-	
-	public SSDPSearchResponseSocket(String bindAddr, int port)
-	{
-		super(bindAddr, port);
-		setControlPoint(null);
-	}
+    public SSDPSearchResponseSocket()
+    {
+        setControlPoint(null);
+    }
 
-	////////////////////////////////////////////////
-	//	ControlPoint	
-	////////////////////////////////////////////////
+    public SSDPSearchResponseSocket(String bindAddr, int port)
+    {
+        super(bindAddr, port);
+        setControlPoint(null);
+    }
 
-	private ControlPoint controlPoint = null;
-	
-	public void setControlPoint(ControlPoint ctrlp)
-	{
-		this.controlPoint = ctrlp;
-	}
+    // //////////////////////////////////////////////
+    // ControlPoint
+    // //////////////////////////////////////////////
 
-	public ControlPoint getControlPoint()
-	{
-		return controlPoint;
-	}
+    private ControlPoint controlPoint = null;
 
-	////////////////////////////////////////////////
-	//	run	
-	////////////////////////////////////////////////
+    public void setControlPoint(ControlPoint ctrlp)
+    {
+        this.controlPoint = ctrlp;
+    }
 
-	private Thread deviceSearchResponseThread = null;
-		
-	public void run()
-	{
-		Thread thisThread = Thread.currentThread();
-		
-		ControlPoint ctrlPoint = getControlPoint();
+    public ControlPoint getControlPoint()
+    {
+        return controlPoint;
+    }
 
-		while (deviceSearchResponseThread == thisThread) {
-			Thread.yield();
-			SSDPPacket packet = receive();
-			if (packet == null)
-				break;
-			if (ctrlPoint != null)
-				ctrlPoint.searchResponseReceived(packet); 
-		}
-	}
-	
-	public void start()
-	{
-		deviceSearchResponseThread = new Thread(this);
-		deviceSearchResponseThread.start();
-	}
-	
-	public void stop()
-	{
-		deviceSearchResponseThread = null;
-	}
+    // //////////////////////////////////////////////
+    // run
+    // //////////////////////////////////////////////
 
-	////////////////////////////////////////////////
-	//	post
-	////////////////////////////////////////////////
+    private Thread deviceSearchResponseThread = null;
 
-	public boolean post(String addr, int port, SSDPSearchResponse res)
-	{
-		return post(addr, port, res.getHeader());
-	}
+    public void run()
+    {
+        Thread thisThread = Thread.currentThread();
 
-	////////////////////////////////////////////////
-	//	post
-	////////////////////////////////////////////////
+        ControlPoint ctrlPoint = getControlPoint();
 
-	public boolean post(String addr, int port, SSDPSearchRequest req)
-	{
-		return post(addr, port, req.toString());
-	}
+        while (deviceSearchResponseThread == thisThread)
+        {
+            Thread.yield();
+            SSDPPacket packet = receive();
+            if (packet == null)
+                break;
+            if (ctrlPoint != null)
+                ctrlPoint.searchResponseReceived(packet);
+        }
+    }
+
+    public void start()
+    {
+        deviceSearchResponseThread = new Thread(this);
+        deviceSearchResponseThread.start();
+    }
+
+    public void stop()
+    {
+        deviceSearchResponseThread = null;
+    }
+
+    // //////////////////////////////////////////////
+    // post
+    // //////////////////////////////////////////////
+
+    public boolean post(String addr, int port, SSDPSearchResponse res)
+    {
+        return post(addr, port, res.getHeader());
+    }
+
+    // //////////////////////////////////////////////
+    // post
+    // //////////////////////////////////////////////
+
+    public boolean post(String addr, int port, SSDPSearchRequest req)
+    {
+        return post(addr, port, req.toString());
+    }
 }
-

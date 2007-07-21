@@ -1,104 +1,104 @@
 /******************************************************************
-*
-*	MediaServer for CyberLink
-*
-*	Copyright (C) Satoshi Konno 2003-2004
-*
-*	File : SearchAction
-*
-*	Revision:
-*
-*	08/16/04
-*		- Changed getObjectID() to return the string value.
-*
-******************************************************************/
+ *
+ *	MediaServer for CyberLink
+ *
+ *	Copyright (C) Satoshi Konno 2003-2004
+ *
+ *	File : SearchAction
+ *
+ *	Revision:
+ *
+ *	08/16/04
+ *		- Changed getObjectID() to return the string value.
+ *
+ ******************************************************************/
 
 package org.cybergarage.upnp.media.server.action;
 
-import org.cybergarage.upnp.*;
+import org.cybergarage.upnp.Action;
 
 public class SearchAction extends Action
 {
-	////////////////////////////////////////////////
-	// Constants
-	////////////////////////////////////////////////
-	
-	public final static String CONTAINER_ID = "ContainerID";
-	public final static String SEARCH_CRITERIA = "SearchCriteria";
-	public final static String FILTER = "Filter";
-	public final static String STARTING_INDEX = "StartingIndex";
-	public final static String REQUESTED_COUNT = "RequestedCount";
-	public final static String SORT_CRITERIA = "SortCriteria";
-	
-	public final static String RESULT = "Result";
-	public final static String NUMBER_RETURNED = "NumberReturned";
-	public final static String TOTAL_MACHES = "TotalMatches";
-	public final static String UPDATE_ID = "UpdateID";
+    // //////////////////////////////////////////////
+    // Constants
+    // //////////////////////////////////////////////
 
-	////////////////////////////////////////////////
-	// Constrictor
-	////////////////////////////////////////////////
-	
-	public SearchAction(Action action)
-	{
-		super(action);
-	}
+    public final static String CONTAINER_ID    = "ContainerID";
+    public final static String SEARCH_CRITERIA = "SearchCriteria";
+    public final static String FILTER          = "Filter";
+    public final static String STARTING_INDEX  = "StartingIndex";
+    public final static String REQUESTED_COUNT = "RequestedCount";
+    public final static String SORT_CRITERIA   = "SortCriteria";
 
-	////////////////////////////////////////////////
-	// Request
-	////////////////////////////////////////////////
+    public final static String RESULT          = "Result";
+    public final static String NUMBER_RETURNED = "NumberReturned";
+    public final static String TOTAL_MACHES    = "TotalMatches";
+    public final static String UPDATE_ID       = "UpdateID";
 
-	public String getContainerID()
-	{
-		return getArgumentValue(CONTAINER_ID);
-	}
+    // //////////////////////////////////////////////
+    // Constrictor
+    // //////////////////////////////////////////////
 
-	public String getSearchCriteria()
-	{
-		return getArgumentValue(SEARCH_CRITERIA);
-	}
-	
-	public int getStartingIndex()
-	{
-		return getArgumentIntegerValue(STARTING_INDEX);
-	}
+    public SearchAction(Action action)
+    {
+        super(action);
+    }
 
-	public int getRequestedCount()
-	{
-		return getArgumentIntegerValue(REQUESTED_COUNT);
-	}
-	
-	public String getSortCriteria()
-	{
-		return getArgumentValue(SORT_CRITERIA);
-	}
+    // //////////////////////////////////////////////
+    // Request
+    // //////////////////////////////////////////////
 
-	public String getFilter()
-	{
-		return getArgumentValue(FILTER);
-	}
-	
-	////////////////////////////////////////////////
-	// Result
-	////////////////////////////////////////////////
+    public String getContainerID()
+    {
+        return getArgumentValue(CONTAINER_ID);
+    }
 
-	public void setResult(String value)
-	{
-		setArgumentValue(RESULT, value);
-	}
+    public String getSearchCriteria()
+    {
+        return getArgumentValue(SEARCH_CRITERIA);
+    }
 
-	public void setNumberReturned(int value)
-	{
-		setArgumentValue(NUMBER_RETURNED, value);
-	}
+    public int getStartingIndex()
+    {
+        return getArgumentIntegerValue(STARTING_INDEX);
+    }
 
-	public void setTotalMaches(int value)
-	{
-		setArgumentValue(TOTAL_MACHES, value);
-	}
+    public int getRequestedCount()
+    {
+        return getArgumentIntegerValue(REQUESTED_COUNT);
+    }
 
-	public void setUpdateID(int value)
-	{
-		setArgumentValue(UPDATE_ID, value);
-	}
+    public String getSortCriteria()
+    {
+        return getArgumentValue(SORT_CRITERIA);
+    }
+
+    public String getFilter()
+    {
+        return getArgumentValue(FILTER);
+    }
+
+    // //////////////////////////////////////////////
+    // Result
+    // //////////////////////////////////////////////
+
+    public void setResult(String value)
+    {
+        setArgumentValue(RESULT, value);
+    }
+
+    public void setNumberReturned(int value)
+    {
+        setArgumentValue(NUMBER_RETURNED, value);
+    }
+
+    public void setTotalMaches(int value)
+    {
+        setArgumentValue(TOTAL_MACHES, value);
+    }
+
+    public void setUpdateID(int value)
+    {
+        setArgumentValue(UPDATE_ID, value);
+    }
 }

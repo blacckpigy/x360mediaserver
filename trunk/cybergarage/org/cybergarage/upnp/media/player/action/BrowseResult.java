@@ -1,64 +1,62 @@
 /******************************************************************
-*
-*	MediaPlayer for CyberLink
-*
-*	Copyright (C) Satoshi Konno 2005
-*
-*	File : BrowseAction.java
-*
-*	09/26/05
-*		- first revision.
-*
-******************************************************************/
+ *
+ *	MediaPlayer for CyberLink
+ *
+ *	Copyright (C) Satoshi Konno 2005
+ *
+ *	File : BrowseAction.java
+ *
+ *	09/26/05
+ *		- first revision.
+ *
+ ******************************************************************/
 
 package org.cybergarage.upnp.media.player.action;
 
-import org.cybergarage.xml.*;
-import org.cybergarage.upnp.*;
-import org.cybergarage.upnp.media.server.*;
+import org.cybergarage.xml.Node;
 
 public class BrowseResult
 {
-	////////////////////////////////////////////////
-	// Member
-	////////////////////////////////////////////////
+    // //////////////////////////////////////////////
+    // Member
+    // //////////////////////////////////////////////
 
-	private Node resultNode;
+    private Node resultNode;
 
-	////////////////////////////////////////////////
-	// Constrictor
-	////////////////////////////////////////////////
-	
-	public BrowseResult(Node node)
-	{
-		setResultNode(node);
-	}
+    // //////////////////////////////////////////////
+    // Constrictor
+    // //////////////////////////////////////////////
 
-	////////////////////////////////////////////////
-	// Request
-	////////////////////////////////////////////////
+    public BrowseResult(Node node)
+    {
+        setResultNode(node);
+    }
 
-	public void setResultNode(Node node)
-	{
-		resultNode = node;
-	}
+    // //////////////////////////////////////////////
+    // Request
+    // //////////////////////////////////////////////
 
-	public Node getResultNode()
-	{
-		return resultNode;
-	}
+    public void setResultNode(Node node)
+    {
+        resultNode = node;
+    }
 
-	////////////////////////////////////////////////
-	// ContentNode
-	////////////////////////////////////////////////
+    public Node getResultNode()
+    {
+        return resultNode;
+    }
 
-	public int getNContentNodes()
-	{
-		return resultNode.getNNodes();
-	}
+    // //////////////////////////////////////////////
+    // ContentNode
+    // //////////////////////////////////////////////
 
-	public Node getContentNode(int n)
-	{
-		return resultNode.getNode(n);
-	}
+    public int getNContentNodes()
+    {
+        return resultNode.getNNodes();
+    }
+
+    public Node getContentNode(int n)
+    {
+        return resultNode.getNode(n);
+    }
 }

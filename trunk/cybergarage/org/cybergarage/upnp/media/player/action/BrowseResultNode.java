@@ -1,51 +1,47 @@
 /******************************************************************
-*
-*	MediaPlayer for CyberLink
-*
-*	Copyright (C) Satoshi Konno 2005
-*
-*	File : BrowseAction.java
-*
-*	09/26/05
-*		- first revision.
-*
-******************************************************************/
+ *
+ *	MediaPlayer for CyberLink
+ *
+ *	Copyright (C) Satoshi Konno 2005
+ *
+ *	File : BrowseAction.java
+ *
+ *	09/26/05
+ *		- first revision.
+ *
+ ******************************************************************/
 
 package org.cybergarage.upnp.media.player.action;
 
-import java.io.*;
+import java.io.InputStream;
 
-import org.cybergarage.xml.*;
-import org.cybergarage.upnp.*;
-import org.cybergarage.upnp.media.server.*;
-import org.cybergarage.upnp.media.server.object.item.*;
+import org.cybergarage.upnp.media.server.object.item.ItemNode;
 
 public class BrowseResultNode extends ItemNode
 {
-	////////////////////////////////////////////////
-	// Constroctor
-	////////////////////////////////////////////////
+    // //////////////////////////////////////////////
+    // Constroctor
+    // //////////////////////////////////////////////
 
-	public BrowseResultNode()
-	{
-	}
+    public BrowseResultNode()
+    {}
 
-	////////////////////////////////////////////////
-	// Abstract methods
-	////////////////////////////////////////////////
+    // //////////////////////////////////////////////
+    // Abstract methods
+    // //////////////////////////////////////////////
 
-	public long getContentLength()
-	{
-		return 0;
-	}
+    public long getContentLength()
+    {
+        return 0;
+    }
 
-	public InputStream getContentInputStream()
-	{
-		return null;
-	}
+    public InputStream getContentInputStream()
+    {
+        return null;
+    }
 
-	public String getMimeType()
-	{
-		return "*/*";
-	}
+    public String getMimeType()
+    {
+        return "*/*";
+    }
 }

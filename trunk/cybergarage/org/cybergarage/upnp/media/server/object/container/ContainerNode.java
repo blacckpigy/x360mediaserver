@@ -1,108 +1,107 @@
 /******************************************************************
-*
-*	MediaServer for CyberLink
-*
-*	Copyright (C) Satoshi Konno 2003
-*
-*	File : ContentNode
-*
-*	Revision:
-*
-*	10/22/03
-*		- first revision.
-*
-******************************************************************/
+ *
+ *	MediaServer for CyberLink
+ *
+ *	Copyright (C) Satoshi Konno 2003
+ *
+ *	File : ContentNode
+ *
+ *	Revision:
+ *
+ *	10/22/03
+ *		- first revision.
+ *
+ ******************************************************************/
 
 package org.cybergarage.upnp.media.server.object.container;
 
-import org.cybergarage.xml.*;
-import org.cybergarage.upnp.media.server.object.*;
+import org.cybergarage.upnp.media.server.object.ContentNode;
+import org.cybergarage.xml.Node;
 
 public class ContainerNode extends ContentNode
 {
-	////////////////////////////////////////////////
-	// Constants
-	////////////////////////////////////////////////
+    // //////////////////////////////////////////////
+    // Constants
+    // //////////////////////////////////////////////
 
-	public final static String NAME = "container";
-	
-	public final static String CHILD_COUNT = "childCount";
-	public final static String SEARCHABLE = "searchable";
+    public final static String NAME             = "container";
 
-	public final static String OBJECT_CONTAINER = "object.container";
+    public final static String CHILD_COUNT      = "childCount";
+    public final static String SEARCHABLE       = "searchable";
 
-	////////////////////////////////////////////////
-	// Constroctor
-	////////////////////////////////////////////////
-	
-	public ContainerNode()
-	{
-		setID(-1);
-		setName(NAME);
-		setSearchable(0);
-		setChildCount(0);
-		setUPnPClass(OBJECT_CONTAINER);
-		setWriteStatus(UNKNOWN);
-	}
+    public final static String OBJECT_CONTAINER = "object.container";
 
-	////////////////////////////////////////////////
-	//	isContainerNode
-	////////////////////////////////////////////////
-	
-	public final static boolean isContainerNode(Node node)
-	{
-		String name = node.getName();
-		if (name == null)
-			return false;
-		return name.equals(NAME);
-	}
-	
-	////////////////////////////////////////////////
-	//	Child node
-	////////////////////////////////////////////////
+    // //////////////////////////////////////////////
+    // Constroctor
+    // //////////////////////////////////////////////
 
-	public void addContentNode(ContentNode node) 
-	{
-		addNode(node);
-		node.setParentID(getID());
-		setChildCount(getNContentNodes());
-		node.setContentDirectory(getContentDirectory());
-	}
+    public ContainerNode()
+    {
+        setID( -1);
+        setName(NAME);
+        setSearchable(0);
+        setChildCount(0);
+        setUPnPClass(OBJECT_CONTAINER);
+        setWriteStatus(UNKNOWN);
+    }
 
-	public boolean removeContentNode(ContentNode node) 
-	{
-		boolean ret = removeNode(node);
-		setChildCount(getNContentNodes());
-		return ret;
-	}
+    // //////////////////////////////////////////////
+    // isContainerNode
+    // //////////////////////////////////////////////
 
-	////////////////////////////////////////////////
-	// chileCount
-	////////////////////////////////////////////////
-	
-	public void setChildCount(int id)
-	{
-		setAttribute(CHILD_COUNT, id);
-	}
-	
-	public int getChildCount()
-	{
-		return getAttributeIntegerValue(CHILD_COUNT);
-	}
+    public final static boolean isContainerNode(Node node)
+    {
+        String name = node.getName();
+        if (name == null)
+            return false;
+        return name.equals(NAME);
+    }
 
-	////////////////////////////////////////////////
-	// searchable
-	////////////////////////////////////////////////
-	
-	public void setSearchable(int value)
-	{
-		setAttribute(SEARCHABLE, value);
-	}
-	
-	public int getSearchable()
-	{
-		return getAttributeIntegerValue(SEARCHABLE);
-	}
-	
+    // //////////////////////////////////////////////
+    // Child node
+    // //////////////////////////////////////////////
+
+    public void addContentNode(ContentNode node)
+    {
+        addNode(node);
+        node.setParentID(getID());
+        setChildCount(getNContentNodes());
+        node.setContentDirectory(getContentDirectory());
+    }
+
+    public boolean removeContentNode(ContentNode node)
+    {
+        boolean ret = removeNode(node);
+        setChildCount(getNContentNodes());
+        return ret;
+    }
+
+    // //////////////////////////////////////////////
+    // chileCount
+    // //////////////////////////////////////////////
+
+    public void setChildCount(int id)
+    {
+        setAttribute(CHILD_COUNT, id);
+    }
+
+    public int getChildCount()
+    {
+        return getAttributeIntegerValue(CHILD_COUNT);
+    }
+
+    // //////////////////////////////////////////////
+    // searchable
+    // //////////////////////////////////////////////
+
+    public void setSearchable(int value)
+    {
+        setAttribute(SEARCHABLE, value);
+    }
+
+    public int getSearchable()
+    {
+        return getAttributeIntegerValue(SEARCHABLE);
+    }
+
 }
-
