@@ -1,12 +1,11 @@
-/***************************************************************************
- * SWT Autoloader - everything in a jar                                    *
- * Copyright (C) 2005 by Silvio Moioli, Nathan Robinson                    *
- * silvio@moioli.net, nathanrobinson@gmail.com                             * 
- *                                                                         *
- * A brief tutorial on how to use this class is provided in the readme     *
- * file included in the distribution package.                              *
- * Use of this software is subject to the terms in the LICENSE.txt file    *
- ***************************************************************************/
+/**
+ * SWT Autoloader - everything in a jar 
+ * 
+ * Copyright (C) 2005 by Silvio Moioli, Nathan Robinson *
+ * silvio@moioli.net, nathanrobinson@gmail.com *
+ * A brief tutorial on how to use this class is provided in the readme file included in 
+ * the distribution package. Use of this software is subject to the terms in the LICENSE.txt file
+ **/
 package net.moioli.swtloader;
 
 import java.io.BufferedReader;
@@ -29,7 +28,7 @@ import java.util.zip.ZipFile;
  * Enables SWT auto-loading from the jar file. A brief tutorial on how to use this class is provided
  * in the readme file included in the distribution package.
  * 
- * @author Silvio Moioli
+ * @author Silvio Moioli, Nathan Robinson
  * @version 1.0
  */
 public class SWTLoader
@@ -42,30 +41,30 @@ public class SWTLoader
 
     /**
      * Constructs a new loader.
-     * 
-     * @param jarInsideLocation
-     *            the sub-location of this jar file (usually siswt.jar) from WITHIN the calling jar file.
      */
     public SWTLoader()
     {
         // System.err.println("Starting...");
         try
         {
-            String hostFileString = this.getClass().getProtectionDomain().getCodeSource().getLocation()
-                              .getFile();
-            
+            String hostFileString = this.getClass()
+                                        .getProtectionDomain()
+                                        .getCodeSource()
+                                        .getLocation()
+                                        .getFile();
+
             String substring = hostFileString.substring(0, hostFileString.lastIndexOf("/"));
-            
+
             // make the correct temp directory.
             substring += "/.tmp";
             new File(substring).mkdirs();
-            
+
             File hostFile = new File(URLDecoder.decode(hostFileString, "UTF-8")).getAbsoluteFile();
             File libDir = new File(URLDecoder.decode(substring, "UTF-8")).getAbsoluteFile();
-            
+
             // System.err.println("HOST: " + hostFile);
             // System.out.println("JAR : " + jarFile);
-            
+
             load(hostFile, libDir);
         }
         catch (LoadingException e)
@@ -88,15 +87,17 @@ public class SWTLoader
         }
     }
 
-   /**
-    * Loads SWT (if it's not loaded already).
-    * @param hostFile
-    * @param libDir
-    * @throws LoadingException
-    * @throws IOException
-    * @throws InterruptedException
-    */
-    private void load(File hostFile, File libDir) throws LoadingException, IOException, InterruptedException
+    /**
+     * Loads SWT (if it's not loaded already).
+     * 
+     * @param hostFile
+     * @param libDir
+     * @throws LoadingException
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    private void load(File hostFile, File libDir) throws LoadingException, IOException,
+            InterruptedException
     {
         if (this.isInstalled() == false)
         {
@@ -104,14 +105,15 @@ public class SWTLoader
 
             // FileOutputStream fos = new FileOutputStream("TEST");
             String[] command = {"java", "-Djava.library.path=" + libDir, "-jar",
-                                hostFile.toString()};
+                    hostFile.toString()};
             Process proc = Runtime.getRuntime().exec(command);
 
             // any error message?
-            // StreamGobbler errorGobbler = new StreamGobbler(proc.getErrorStream(), "ERROR");            
+            // StreamGobbler errorGobbler = new StreamGobbler(proc.getErrorStream(), "ERROR");
 
             // any output?
-            // StreamGobbler outputGobbler = new  StreamGobbler(proc.getInputStream(), "OUTPUT", fos);
+            // StreamGobbler outputGobbler = new StreamGobbler(proc.getInputStream(), "OUTPUT",
+            // fos);
 
             // kick them off
             // errorGobbler.start();
@@ -134,7 +136,7 @@ public class SWTLoader
         // if we have previously extracted... no need to do it again.
         if (libDir != null && libDir.list().length > 0)
             return;
-        
+
         try
         {
             ZipFile zipJarFile = new ZipFile(jarFile);
@@ -156,10 +158,13 @@ public class SWTLoader
                     while (internalZipEntries.hasMoreElements())
                     {
                         ZipEntry internalEntry = (ZipEntry) internalZipEntries.nextElement();
-                        String internalFilename = internalEntry.getName().substring(internalEntry.getName().lastIndexOf("/") + 1);
+                        String internalFilename = internalEntry.getName()
+                                                               .substring(internalEntry.getName()
+                                                                                       .lastIndexOf("/") + 1);
 
                         // System.err.println("LOOKING INSIDE: " + pathname);
-                        if (internalFilename.endsWith(".so") || internalFilename.endsWith(".dll") || internalFilename.endsWith(".jnilib"))
+                        if (internalFilename.endsWith(".so") || internalFilename.endsWith(".dll") ||
+                            internalFilename.endsWith(".jnilib"))
                         {
                             InputStream fileWayInZip = internalZipFile.getInputStream(internalEntry);
                             saveFile(fileWayInZip, internalFilename, libDir);
@@ -186,8 +191,8 @@ public class SWTLoader
         }
     }
 
-    private File saveFile(InputStream in, String fileName, File libDir) 
-    throws IOException, FileNotFoundException, LoadingException
+    private File saveFile(InputStream in, String fileName, File libDir) throws IOException,
+            FileNotFoundException, LoadingException
     {
         // System.err.println("SAVING!!): " + pathname);
         // System.err.println("SWT!!): " + libDir);
@@ -216,7 +221,7 @@ public class SWTLoader
         // System.err.println("PATH: " + System.getProperty("java.library.path"));
         try
         {
-            // see if the class is loaded...
+            // see if the class can load...
             Class.forName("org.eclipse.swt.widgets.Display");
         }
         catch (ClassNotFoundException e)
@@ -234,28 +239,29 @@ public class SWTLoader
             // System.err.println("UnsatisfiedLinkError");
             return false;
         }
-        System.out.println("SWT loaded successfully.");
+        // System.out.println("SWT loaded successfully.");
         return true;
     }
 }
 
 class StreamGobbler extends Thread
 {
-    InputStream is;
-    String type;
+    InputStream  is;
+    String       type;
     OutputStream os;
-    
+
     StreamGobbler(InputStream is, String type)
     {
         this(is, type, null);
     }
+
     StreamGobbler(InputStream is, String type, OutputStream redirect)
     {
         this.is = is;
         this.type = type;
         this.os = redirect;
     }
-    
+
     public void run()
     {
         try
@@ -263,21 +269,22 @@ class StreamGobbler extends Thread
             PrintWriter pw = null;
             if (os != null)
                 pw = new PrintWriter(os);
-                
+
             InputStreamReader isr = new InputStreamReader(is);
             BufferedReader br = new BufferedReader(isr);
-            String line=null;
-            while ( (line = br.readLine()) != null)
+            String line = null;
+            while ((line = br.readLine()) != null)
             {
                 if (pw != null)
                     pw.println(line);
-                System.out.println(type + ">" + line);    
+                System.out.println(type + ">" + line);
             }
             if (pw != null)
                 pw.flush();
-        } catch (IOException ioe)
-            {
-            ioe.printStackTrace();  
-            }
+        }
+        catch (IOException ioe)
+        {
+            ioe.printStackTrace();
+        }
     }
 }
