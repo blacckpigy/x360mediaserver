@@ -21,8 +21,6 @@
 package x360mediaserver.upnpmediaserver.upnp.formats.streamers;
 
 import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;

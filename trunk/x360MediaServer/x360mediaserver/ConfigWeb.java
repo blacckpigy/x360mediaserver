@@ -1,14 +1,8 @@
 package x360mediaserver;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 public class ConfigWeb
 {
@@ -25,101 +19,101 @@ public class ConfigWeb
      * @param req
      * @param resp
      */
-    public static void doGet(HttpServletRequest req, HttpServletResponse resp)
-    {
-        try
-        {
-// System.out.println(req.getPathInfo());
-            System.out.println("doing get in configurator: " + req.getPathInfo());
-            PrintWriter writer = resp.getWriter();
-            // resp.getWriter().write("<form action=\"http://127.0.0.1:7000/configure/addDir\"
-            // method=\"POST\">Music Dir: <input type=\"text\" name=\"musicdir\"><br>iTunes File:
-            // <input type=\"text\" name=\"itunesfile\"><br><br><input type=\"submit\"
-            // value=\"Send\"></form><form action=\"http://127.0.0.1:7000/configure/addStream\"
-            // method=\"POST\">Stream Name:<input type=\"text\" name=\"name\"><br>Stream URL:<input
-            // type=\"text\" name=\"URL\"><br><br><input type=\"submit\" value=\"Send\"></form>");
-            writer.write("<HTML>\n");
-            for (ConfiguratorElement element : elements)
-            {
-                writer.write("<Form action=\"http://127.0.0.1:7000" + Config.getUrl("config") + "/" +
-                             element.url + "\" method=\"POST\">\n");
-                writer.write(element.formElement);
-                writer.write("<input type=\"submit\" value=\"Send\">\n");
-                writer.write("</Form>\n");
-            }
-            writer.write("</HTML>\n");
-        }
-        catch (IOException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-    }
+//    public static void doGet(HttpServletRequest req, HttpServletResponse resp)
+//    {
+//        try
+//        {
+//            // System.out.println(req.getPathInfo());
+//            System.out.println("doing get in configurator: " + req.getPathInfo());
+//            PrintWriter writer = resp.getWriter();
+//            // resp.getWriter().write("<form action=\"http://127.0.0.1:7000/configure/addDir\"
+//            // method=\"POST\">Music Dir: <input type=\"text\" name=\"musicdir\"><br>iTunes File:
+//            // <input type=\"text\" name=\"itunesfile\"><br><br><input type=\"submit\"
+//            // value=\"Send\"></form><form action=\"http://127.0.0.1:7000/configure/addStream\"
+//            // method=\"POST\">Stream Name:<input type=\"text\" name=\"name\"><br>Stream URL:<input
+//            // type=\"text\" name=\"URL\"><br><br><input type=\"submit\" value=\"Send\"></form>");
+//            writer.write("<HTML>\n");
+//            for (ConfiguratorElement element : elements)
+//            {
+//                writer.write("<Form action=\"http://127.0.0.1:7000" + Config.getUrl("config") + "/" +
+//                             element.url + "\" method=\"POST\">\n");
+//                writer.write(element.formElement);
+//                writer.write("<input type=\"submit\" value=\"Send\">\n");
+//                writer.write("</Form>\n");
+//            }
+//            writer.write("</HTML>\n");
+//        }
+//        catch (IOException e)
+//        {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//        }
+//
+//    }
 
     /**
      * This does all the work for posting (saving) the web configuration webpage
      * @param req
      * @param resp
      */
-    public static void doPost(HttpServletRequest req, HttpServletResponse resp)
-    {
-        System.out.println("doing post in configurator: " + req.getPathInfo());
-        if (req.getRemoteHost().contains("127.0.0.1"))
-        {
-            debug(req.getPathInfo() + " " + req.getRemoteHost());
-
-            HashMap<String, String> params = new HashMap<String, String>();
-
-            try
-            {
-                BufferedReader reader = req.getReader();
-                System.out.println("Opened reader");
-
-                String lineData = "";
-
-                {
-                    String line;
-                    while ((line = reader.readLine()) != null)
-                    {
-                        lineData += line;
-                    }
-                }
-
-                for (String data : lineData.split("&"))
-                {
-
-                    String[] option = data.split("=");
-                    if (option.length > 1)
-                    {
-                        params.put(option[0], option[1].replace("%3A", ":").replace("%5C", "\\")
-                                                       .replace("%2F", "/").replace("+", " ")
-                                                       .replace("%27", "'").replace("%3F", "?")
-                                                       .replace("%3D", "="));
-                        System.out.println(option[0] +
-                                           ": " +
-                                           option[1].replace("%3A", ":").replace("%5C", "\\")
-                                                    .replace("%2F", "/").replace("+", " "));
-                    }
-                }
-            }
-            catch (IOException e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-
-            String file = req.getPathInfo().substring(req.getPathInfo().lastIndexOf("/") + 1);
-            for (ConfiguratorElement element : elements)
-            {
-                if (file.equals(element.url))
-                {
-                    element.listener.process(params);
-                }
-            }
-        }
-
-    }
+//    public static void doPost(HttpServletRequest req, HttpServletResponse resp)
+//    {
+//        System.out.println("doing post in configurator: " + req.getPathInfo());
+//        if (req.getRemoteHost().contains("127.0.0.1"))
+//        {
+//            debug(req.getPathInfo() + " " + req.getRemoteHost());
+//
+//            HashMap<String, String> params = new HashMap<String, String>();
+//
+//            try
+//            {
+//                BufferedReader reader = req.getReader();
+//                System.out.println("Opened reader");
+//
+//                String lineData = "";
+//
+//                {
+//                    String line;
+//                    while ((line = reader.readLine()) != null)
+//                    {
+//                        lineData += line;
+//                    }
+//                }
+//
+//                for (String data : lineData.split("&"))
+//                {
+//
+//                    String[] option = data.split("=");
+//                    if (option.length > 1)
+//                    {
+//                        params.put(option[0], option[1].replace("%3A", ":").replace("%5C", "\\")
+//                                                       .replace("%2F", "/").replace("+", " ")
+//                                                       .replace("%27", "'").replace("%3F", "?")
+//                                                       .replace("%3D", "="));
+//                        System.out.println(option[0] +
+//                                           ": " +
+//                                           option[1].replace("%3A", ":").replace("%5C", "\\")
+//                                                    .replace("%2F", "/").replace("+", " "));
+//                    }
+//                }
+//            }
+//            catch (IOException e)
+//            {
+//                // TODO Auto-generated catch block
+//                e.printStackTrace();
+//            }
+//
+//            String file = req.getPathInfo().substring(req.getPathInfo().lastIndexOf("/") + 1);
+//            for (ConfiguratorElement element : elements)
+//            {
+//                if (file.equals(element.url))
+//                {
+//                    element.listener.process(params);
+//                }
+//            }
+//        }
+//
+//    }
 
     /**
      * When you modify something in the webpage... it happens here.

@@ -21,7 +21,6 @@
 package x360mediaserver.upnpmediaserver.upnp.formats.streamers;
 
 import java.io.OutputStream;
-import java.net.URL;
 
 /** Interface to handle writing a file out in a particular format
  * @author tom

@@ -4,6 +4,9 @@ import java.net.BindException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+
+import net.moioli.swtloader.SWTLoader;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
@@ -11,8 +14,6 @@ import org.eclipse.swt.widgets.MenuItem;
 
 import x360mediaserver.Config;
 import x360mediaserver.newServlet.MediaServer;
-import x360mediaserver.service.AddressEntryWindow;
-import x360mediaserver.service.TrayIcon;
 
 /**
  * This class is the GUI front end to the x360MediaServe application.
@@ -21,20 +22,20 @@ import x360mediaserver.service.TrayIcon;
  */
 public class Service extends TrayIcon
 {
-    private static final String DEFAULT_TRAY_NAME = "x360 MediaServe";
+    private static final String DEFAULT_TRAY_NAME = "x360 MediaServer";
     private MediaServer mediaServer;
     
     public static void main(String...args)
     {
         Config.loadConfig();
         // TODO: Start the webserver automatically, so we can do the config thing remotely. (once the "tray icon" starts..
-//        try
-//        {
-//           new MediaServer();
-//        }
-//        catch (BindException e)
-//        { 
-//        }
+        try
+        {
+           new MediaServer();
+        }
+        catch (BindException e)
+        { 
+        }
         new Service();
     }
 
@@ -49,8 +50,6 @@ public class Service extends TrayIcon
     {
         super(trayText);
     }
-
-    
 
     public void start()
     {
@@ -91,8 +90,8 @@ public class Service extends TrayIcon
         if (mediaServer.getUpnpResponder() != null)
             mediaServer.getUpnpResponder().stop();
         
-        if (mediaServer.getWebserver() != null)
-            mediaServer.getWebserver().stop();
+//        if (mediaServer.getWebserver() != null)
+//            mediaServer.getWebserver().stop();
     }
     
     public void setupMenu()
