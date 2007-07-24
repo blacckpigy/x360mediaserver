@@ -1,0 +1,81 @@
+<?xml version="1.0"?>
+<!-- Example Ant file, must be edited for your program! -->
+<project name="SelfInstallingSWT" default="all" basedir=".">
+
+	<property name="swtVer" value="swt-3.2.2" />
+	
+	<!-- Main dirs -->
+	<property name="srcDir" value="src" />
+	<property name="buildDir" value="build" />
+	<property name="zipDir" value="lib/swt" />
+	<property name="distDir" value="dist" />
+
+	<property name="swtLib1" value="${libDir}/swt.jar" />
+
+	<target name="all" depends="init, compile, jar" />
+
+	<target name="init" depends="clean" description="Sets up the needed directories.">
+		<mkdir dir="${buildDir}" />
+		<mkdir dir="${distDir}" />
+	</target>
+
+	<target name="clean" description="Wipes out old builds.">
+		<delete dir="${buildDir}" />
+		<delete dir="${distDir}" />
+	</target>
+
+	<target name="compile" depends="OS.check">
+		<javac srcdir="${srcDir}" destdir="${buildDir}">
+			<include name="**/*.java" />
+		</javac>
+
+		<!-- copy the CORRECT zip files over! -->
+		<delete dir="${buildDir}/${zipDir}" />
+		<mkdir dir="${buildDir}/${zipDir}" />
+        <copy todir="${buildDir}/${zipDir}">
+            <fileset dir="${zipDir}/">
+                <include name="${swtVer}-win32-win32-x86.zip" if="isWin86"/>
+            	<include name="${swtVer}-gtk-linux-x86_64.zip" if="isLinux64"/>
+            	<include name="${swtVer}-gtk-linux-x86.zip" if="isLinux86"/>
+            	<include name="${swtVer}-carbon-macosx.zip" if="isMac"/>
+            </fileset>
+        </copy>
+	</target>
+
+	<target name="jar" depends="OS.check">
+		
+		<copy tofile="${buildDir}/swt.jar">
+            <fileset dir="${zipDir}/">
+                <include name="${swtVer}-win32-win32-x86.jar" if="isWin86"/>
+                <include name="${swtVer}-gtk-linux-x86_64.jar" if="isLinux64"/>
+                <include name="${swtVer}-gtk-linux-x86.jar" if="isLinux86"/>
+                <include name="${swtVer}-carbon-macosx.jar" if="isMac"/>
+            </fileset>
+        </copy>
+		<jar destfile="${distDir}/siswt.jar" basedir="${buildDir}" excludes="swt.jar">
+			<zipfileset src="${buildDir}/swt.jar">
+			</zipfileset>
+		</jar>
+	</target>
+	
+	
+	
+	<target name="OS.check">
+    	<condition property="isWin86">
+    	    <os name="Windows XP"/>
+    	</condition>
+		<condition property="isLinux86">
+			<os name="Linux"/>
+		</condition>
+		<condition property="isLinux64">
+			<or>
+			    <os name="Linux" arch="x86_64"/>
+				<os name="Linux" arch="amd64"/>
+			</or>
+		</condition>
+		<condition property="isMac">
+            <os family="mac"/>
+        </condition>
+	</target>
+</project>
+

@@ -1,0 +1,85 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>SWTLoader</title>
+</head>
+<body>
+<h1>SWTLoader: run <a href="http://www.eclipse.org/articles/Article-SWT-Design-1/SWT-Design-1.html">SWT</a> programs with a double click</h1>
+<h2>Introduction</h2>
+<a href="http://www.eclipse.org/articles/Article-SWT-Design-1/SWT-Design-1.html">SWT</a> and <a href="http://swingwt.sourceforge.net/">SwingWT</a>-based programs, as well as all other Java programs with
+native libraries, are often tricky to deploy.<br/>
+Because the native libraries are needed, the users have either to
+install those in a directory in the PATH (assuming that they know what
+it is) or a platform-specific installer or script must be deployed.<br/>
+Jar files would be preferrable, because a double-click would launch
+them on most platforms, but the Java Virtual Machine cannot use native
+libraries in Jars, in facts you'll have to set the -Djava.library.path
+commandline option in most cases.<br/>
+SWTLoader is an elegant hack to avoid all this, allowing you to deploy
+self-contained, self-extracting native libraries such as <a href="http://www.eclipse.org/articles/Article-SWT-Design-1/SWT-Design-1.html">SWT</a> in a
+single Jar file.<br/>
+<h2>How to use it</h2>
+You can use SWTLoader with three easy steps:<br/>
+<ul>
+  <li><code>import net.moioli.swtloader.*;</code> in the class with the
+main() method;</li>
+  <li>Create a new SWTLoader as the first instruction in the main method:</li>
+</ul>
+public static void main(String[] args){<br/>
+new SWTLoader("packagename.jar");<br/>
+...<br/>
+<ul>
+  <li>Include in the Jar file the needed .dll, .so or .jnilib files.
+Ant example:</li>
+</ul><code>
+	&lt;target name=&quot;demo-<a href="http://swingwt.sourceforge.net/">SwingWT</a>-linux&quot; &gt;<br/>
+        &lt;javac srcdir=&quot;${srcDir}&quot; destdir=&quot;${buildDir}&quot;&gt;<br/>
+          &lt;classpath&gt;<br/>
+              &lt;pathelement path=&quot;swt.jar&quot;/&gt;<br/>
+              &lt;pathelement path=&quot;swt-pi.jar&quot;/&gt;<br/>
+          &lt;/classpath&gt;<br/>
+          &lt;include name=&quot;**/*.java&quot; /&gt;<br/>
+        &lt;/javac&gt;<br/>
+		&lt;unjar src=&quot;$swt.jar&quot; dest=&quot;${buildDir}&quot;/&gt;<br/>
+		&lt;unjar src=&quot;$swt-pi.jar&quot; dest=&quot;${buildDir}&quot;/&gt;<br/>
+		&lt;copy todir=&quot;${buildDir}&quot;&gt;<br/>
+			&lt;fileset dir=&quot;${swtLinuxLibDir}/&quot;&gt;<br/>
+				&lt;include name=&quot;*.so&quot;/&gt;<br/>
+		    &lt;/fileset&gt;<br/>
+		&lt;/copy&gt;<br/>
+		&lt;jar destfile=&quot;${buildDir}/demo-<a href="http://swingwt.sourceforge.net/">SwingWT</a>-linux.jar&quot; basedir=&quot;${buildDir}&quot;&gt;<br/>
+		    &lt;fileset dir=&quot;${buildDir}&quot; &gt;<br/>
+		          &lt;include name=&quot;**/*.class&quot; /&gt;<br/>
+		          &lt;include name=&quot;**/*.so&quot;/&gt;<br/>
+		    &lt;/fileset&gt;<br/>
+			&lt;manifest&gt;<br/>
+		        &lt;attribute name=&quot;Main-Class&quot; value=&quot;SWTDemo&quot;/&gt;<br/>
+            &lt;/manifest&gt;<br/>
+        &lt;/jar&gt;<br/>
+    &lt;/target&gt;<br/>
+</code>
+<b>Users, double-clicking or using the command <code>java -jar
+packagename.jar</code> will get a fully functional SWT-enabled JVM.</b><br/>
+<br/>
+<h2>How does it work</h2>
+The inner workings of the script are quite easy: it will firstly create
+a temporary directory, then it will unpack the needed files in it and
+re-invoke the JVM with the needed -D option. Note that you'll have <b>only
+one JVM running at a time</b>: the former VM will be terminated safely.<br/>
+Also, if <a href="http://www.eclipse.org/articles/Article-SWT-Design-1/SWT-Design-1.html">SWT</a> is already loadable, none of these actions will be
+performed.<br/>
+<h2>Get it</h2>
+<a href="http://www.moioli.net/SWTLoader.zip">Here! (sources only)</a><br/>
+<br/>
+<h2>License</h2>
+SWTLoader is published under the <a href="http://www.gnu.org/copyleft/gpl.html">GPL license</a>. If you need a non-GPL'd
+version (eg. for commercial purposes) email me: silvio at moioli dot net<br/>
+<h2>Feedback</h2>
+Feedback (both positive and negative) is always welcome. Please write
+me at: silvio at moioli dot net<br/>
+Italian-speaking people can also visit <a href="http://www.moioli.net">my site</a>.
+<br/>
+</body>
+</html>
