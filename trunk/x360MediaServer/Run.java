@@ -18,11 +18,7 @@
  */
 
 
-import java.net.BindException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
-import x360mediaserver.newServlet.MediaServer;
+import net.moioli.swtloader.SWTLoader;
 import x360mediaserver.service.Service;
 
 
@@ -33,40 +29,7 @@ import x360mediaserver.service.Service;
 public class Run {
 	public static void main(String[] args)
 	{
-	    System.out.println("xbox360mediaserve, Copyright (C) 2006 Thomas Walker\n"+
-				"xbox360mediaserve comes with ABSOLUTELY NO WARRANTY; for details see license\n"+
-				"This is free software, and you are welcome to redistribute it\n"+
-		"under certain conditions; see license for details.\n");
-
-
-		System.out.println("OS Detected:" + System.getProperty("os.name"));
-
-        MediaServer mediaServer;
-        if (args.length > 0)
-        {
-            // if we are given an address then use it
-            try
-            {
-                mediaServer = new MediaServer(InetAddress.getByName(args[0]).getHostAddress());
-            }
-            catch (BindException e)
-            {
-            }
-            catch (UnknownHostException e)
-            {
-                System.out.println("Address supplied not valid");
-            }
-        }
-        else
-        {
-            try
-            {
-                // use first interface as address
-                mediaServer = new MediaServer();
-            }
-            catch (BindException e)
-            {
-            }
-        }
+		new SWTLoader();
+		new Service();
     }
 }
