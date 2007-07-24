@@ -5,6 +5,22 @@
  * silvio@moioli.net, nathanrobinson@gmail.com *
  * A brief tutorial on how to use this class is provided in the readme file included in 
  * the distribution package. Use of this software is subject to the terms in the LICENSE.txt file
+ * 
+ * This is an example of exactly what to do when you build your final product jar file
+ * <!-- Build the JAR file -->
+ *    <jar jarfile="${build.dir}/${name}.jar" 
+ *       basedir="${classes.dir}"
+ *     includes="**">
+ *    <zipfileset src="<<where ever this is located...>>/siswt.jar"/>
+ *   <manifest>
+ *      <attribute name="Main-Class" value="Run" />
+ *    <attribute name="Product-Version" value=".05" />
+ *     <attribute name="Build-Date" value="${TODAY}" />
+ *       </manifest>
+ *  </jar>
+ * 
+ * note: in the build.xml file there are more cases for other operating systems (besides windows.)
+ *       you may have to check these to make sure the correct swt files are being copied over.
  **/
 package net.moioli.swtloader;
 
