@@ -19,10 +19,7 @@
 
 package x360mediaserver.upnpmediaserver.upnp.items;
 
-import java.io.BufferedInputStream;
 import java.io.OutputStream;
-import java.net.URL;
-
 
 import org.cybergarage.upnp.media.server.ConnectionManager;
 import org.cybergarage.upnp.media.server.object.ContentNode;

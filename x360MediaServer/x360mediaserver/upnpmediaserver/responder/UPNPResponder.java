@@ -16,13 +16,8 @@
 
 package x360mediaserver.upnpmediaserver.responder;
 
-import org.cybergarage.http.HTTPRequest;
-import org.cybergarage.upnp.Service;
 import org.cybergarage.upnp.device.InvalidDescriptionException;
-import org.cybergarage.util.Debug;
 import org.cybergarage.xml.Node;
-
-import x360mediaserver.Config;
 
 public class UPNPResponder extends UPNPListener
 {
@@ -58,16 +53,20 @@ public class UPNPResponder extends UPNPListener
         initializeLoadedDescription();
         setHTTPPort(port);
 
+        MyServiceList sl = getServiceList(); 
+        for(int i=0; i<sl.size(); ++i) 
+        { 
+            MyService s = sl.getService(i); 
+         
+            if( s.getServiceType().equals(CONTENT_DIRECTORY_SERVICE_TYPE) )
+                s.loadSCPD(contentDirectorySCPD.toString()); 
+            
+            else if( s.getServiceType().equals(CONNECTION_MANAGER_SERVICE_TYPE) )
+                s.loadSCPD(connectionManagerSCPD.toString()); 
         
-        Service servConDir = getService(CONTENT_DIRECTORY_SERVICE_TYPE);
-        servConDir.loadSCPD(contentDirectorySCPD.toString());
-
-        Service servConMan = getService(CONNECTION_MANAGER_SERVICE_TYPE);
-        servConMan.loadSCPD(connectionManagerSCPD.toString());
-
-        Service servmedRR = getService(MEDIA_RECEIVER_REGISTRAR_SERVICE_TYPE);
-        servmedRR.loadSCPD(mediaReceiverRegistrarSCPD.toString());
-
+            else if( s.getServiceType().equals(MEDIA_RECEIVER_REGISTRAR_SERVICE_TYPE) )
+                s.loadSCPD(mediaReceiverRegistrarSCPD.toString()); 
+        } 
     }
 
     protected void finalize()
@@ -75,16 +74,6 @@ public class UPNPResponder extends UPNPListener
         stop();
     }
 
-    public void httpRequestRecieved(HTTPRequest httpReq)
-    {
-        Config.out("REQUESTING: " + httpReq);
-        String uri = httpReq.getURI();
-        Debug.message("uri = " + uri);
-        System.out.println("uri = " + uri);
-
-        super.httpRequestRecieved(httpReq);
-    }
-    
     ////////////////////////////////////////////////
     // update
     ////////////////////////////////////////////////

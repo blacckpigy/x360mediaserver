@@ -3,13 +3,12 @@ package x360mediaserver;
 import java.io.File;
 import java.util.ArrayList;
 
-import javax.servlet.http.HttpServlet;
+import net.moioli.swtloader.SWTLoader;
 
 import org.cybergarage.net.HostInterface;
 import org.cybergarage.upnp.UPnP;
 import org.cybergarage.util.Debug;
 import org.cybergarage.xml.Node;
-import org.eclipse.swt.widgets.Shell;
 
 import x360mediaserver.upnpmediaserver.mediareceiverregistrar.MediaReceiverRegistrar;
 import x360mediaserver.upnpmediaserver.upnp.contentdirectory.ContentDirectory;

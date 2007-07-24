@@ -11,18 +11,11 @@
 
 package x360mediaserver.newServlet;
 
-import java.io.PrintWriter;
 import java.net.BindException;
 
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.cybergarage.upnp.UPnP;
 import org.cybergarage.upnp.device.InvalidDescriptionException;
 
 import x360mediaserver.Config;
-import x360mediaserver.ConfigWeb;
 import x360mediaserver.upnpmediaserver.responder.UPNPResponder;
 
 /**
@@ -31,11 +24,10 @@ import x360mediaserver.upnpmediaserver.responder.UPNPResponder;
  * 
  * @author tom
  */
-public class MediaServer extends HttpServlet
+public class MediaServer
 {
     // TODO maybe move servlet functionality into a smaller class to simplify things
 
-    private WebServer                       webserver;
     private UPNPResponder                   upnpResponder;
 
     public MediaServer() throws BindException
@@ -71,7 +63,7 @@ public class MediaServer extends HttpServlet
     public void setup() throws BindException
     {
         setupUPNPServer();
-        setupWebServer();
+//        setupWebServer();
     }
     
     private void setupUPNPServer()
@@ -94,87 +86,87 @@ public class MediaServer extends HttpServlet
         }
     }
 
-    private void setupWebServer() throws BindException
-    {
-        webserver = new WebServer(this);
-        int port = Config.getPort();
-        webserver.addConnector(Config.getAddress(), port);
-        webserver.addConnector("127.0.0.1", port);
-        webserver.start();
-    }
+//    private void setupWebServer() throws BindException
+//    {
+//        webserver = new WebServer(this);
+//        int port = Config.getPort();
+//        webserver.addConnector(Config.getAddress(), port);
+//        webserver.addConnector("127.0.0.1", port);
+//        webserver.start();
+//    }
+//
+//    
+//    
+//    
+//    // Stuff borrowed from Cybergate
+//    // this happens when we select "streams" to be played..
+//    // This is for HTTP traffic as well.
+//    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+//    {
+//        debug("MEDIA SERVER: Do Post:" + req.getPathInfo());
+//
+//        try
+//        {
+////            if (req.getPathInfo().contains("ContentDirectory"))
+////            {
+////                debug("Sending to content dir");
+////                Config.getContentDirectory().doPost(req, resp);
+////            }
+////            else if (req.getPathInfo().contains("X_MS_MediaReceiverRegistrar"))
+////            {
+////                debug("Sending to media reciever");
+////                Config.getMediaReceiverReg().doPost(req, resp);
+////            }
+//            else if (req.getPathInfo().contains("configure"))
+//            {
+//                System.out.println("Doing configure");
+//                ConfigWeb.doPost(req, resp);
+//            }
+//        }
+//        catch (Exception e)
+//        {
+//            debug(e.toString());
+//        }
+//    }
 
-    
-    
-    
-    // Stuff borrowed from Cybergate
-    // this happens when we select "streams" to be played..
-    // This is for HTTP traffic as well.
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
-    {
-        debug("MEDIA SERVER: Do Post:" + req.getPathInfo());
-
-        try
-        {
-            if (req.getPathInfo().contains("ContentDirectory"))
-            {
-                debug("Sending to content dir");
-                Config.getContentDirectory().doPost(req, resp);
-            }
-            else if (req.getPathInfo().contains("X_MS_MediaReceiverRegistrar"))
-            {
-                debug("Sending to media reciever");
-                Config.getMediaReceiverReg().doPost(req, resp);
-            }
-            else if (req.getPathInfo().contains("configure"))
-            {
-                System.out.println("Doing configure");
-                ConfigWeb.doPost(req, resp);
-            }
-        }
-        catch (Exception e)
-        {
-            debug(e.toString());
-        }
-    }
-
-    /**
-     * HTTP requests come in here. This is the backbone for the http webservice
-     * KEYWORD NATHAN HTTP
-     */
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-    {
-        System.out.println("MEDIA SERVER: doGet: " + req.getPathInfo());
-        try
-        {
-            if (req.getPathInfo().contains("ContentDirectory"))
-            {
-                Config.out("Got path:" + Config.getUrl("ContentDirectory"));
-                Config.getContentDirectory().doGet(req, resp);
-            }
-            else if (req.getPathInfo().contains("X_MS_MediaReceiverRegistrar"))
-            {
-                Config.out("Got media:" + Config.getUrl("X_MS_MediaReceiverRegistrar"));
-                Config.getMediaReceiverReg().doGet(req, resp);
-            }
-            else if (req.getPathInfo().contains("config"))
-            {
-                Config.out("Got config:" + Config.getUrl("config"));
-                ConfigWeb.doGet(req, resp);
-            }
-            else // if (req.getPathInfo().contains(Config.getUrl("MediaServer")))
-            {
-                Config.out("Got device description:" + req);
-                PrintWriter writer = resp.getWriter();
-                writer.write(UPnP.XML_DECLARATION + "\n");
-                writer.write(Config.getDescriptionNode().toString());
-            }
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            debug(e.toString());
-        }
-    }
+//    /**
+//     * HTTP requests come in here. This is the backbone for the http webservice
+//     * KEYWORD NATHAN HTTP
+//     */
+//    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+//    {
+//        System.out.println("MEDIA SERVER: doGet: " + req.getPathInfo());
+//        try
+//        {
+//            if (req.getPathInfo().contains("ContentDirectory"))
+//            {
+//                Config.out("Got path:" + Config.getUrl("ContentDirectory"));
+//                Config.getContentDirectory().doGet(req, resp);
+//            }
+//            else if (req.getPathInfo().contains("X_MS_MediaReceiverRegistrar"))
+//            {
+//                Config.out("Got media:" + Config.getUrl("X_MS_MediaReceiverRegistrar"));
+//                Config.getMediaReceiverReg().doGet(req, resp);
+//            }
+//            else if (req.getPathInfo().contains("config"))
+//            {
+//                Config.out("Got config:" + Config.getUrl("config"));
+//                ConfigWeb.doGet(req, resp);
+//            }
+//            else // if (req.getPathInfo().contains(Config.getUrl("MediaServer")))
+//            {
+//                Config.out("Got device description:" + req);
+//                PrintWriter writer = resp.getWriter();
+//                writer.write(UPnP.XML_DECLARATION + "\n");
+//                writer.write(Config.getDescriptionNode().toString());
+//            }
+//        }
+//        catch (Exception e)
+//        {
+//            e.printStackTrace();
+//            debug(e.toString());
+//        }
+//    }
 
     private void debug(String str)
     {
@@ -184,10 +176,5 @@ public class MediaServer extends HttpServlet
     public UPNPResponder getUpnpResponder()
     {
         return upnpResponder;
-    }
-    
-    public WebServer getWebserver()
-    {
-        return webserver;
     }
 }

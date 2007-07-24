@@ -1,5 +1,11 @@
 package x360mediaserver.service;
 
+import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+
+import net.moioli.swtloader.SWTLoader;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -27,8 +33,8 @@ public class TrayIcon implements ITrayIcon
     private TrayItem systemTrayEntry;
     private Menu     menu;
 
-    private Image    startIcon   = new Image(display,Service.class.getResourceAsStream("../../files/icon.png"));
-    private Image    runningIcon = new Image(display,Service.class.getResourceAsStream("../../files/icon running.png"));
+    private Image    startIcon   = null;
+    private Image    runningIcon = null;
 
     /**
      * Creates a tray icon with the specified text
@@ -37,6 +43,19 @@ public class TrayIcon implements ITrayIcon
      */
     public TrayIcon(String trayText)
     {
+        String png = "../..//files/icon.png";
+        String runpng = "../..//files/icon running.png";
+        // if we are in a jar file (standalone) this happens..
+        if (this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile().endsWith(".jar"))
+        {
+            // then we need to change the paths of resource files.
+            png = "/files/icon.png";
+            runpng = "/files/icon running.png";
+        }
+        
+        
+        startIcon   = new Image(display,this.getClass().getResourceAsStream(png));
+        runningIcon = new Image(display,this.getClass().getResourceAsStream(runpng));
         shell = new Shell(display);
         Tray trayBar = display.getSystemTray();
         tip = new ToolTip(shell, SWT.BALLOON | SWT.ICON_INFORMATION);

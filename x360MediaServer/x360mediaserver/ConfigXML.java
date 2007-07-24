@@ -7,14 +7,12 @@ import java.io.PrintWriter;
 
 import org.cybergarage.upnp.UPnP;
 import org.cybergarage.upnp.device.Description;
-import org.cybergarage.upnp.device.InvalidDescriptionException;
 import org.cybergarage.xml.Node;
 import org.cybergarage.xml.Parser;
 import org.cybergarage.xml.ParserException;
 
 import x360mediaserver.upnpmediaserver.mediareceiverregistrar.MediaReceiverRegistrar;
 import x360mediaserver.upnpmediaserver.upnp.contentdirectory.ContentDirectory;
-import x360mediaserver.utils.StringUtils;
 
 public class ConfigXML
 {

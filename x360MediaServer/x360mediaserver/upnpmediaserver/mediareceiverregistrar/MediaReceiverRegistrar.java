@@ -23,18 +23,9 @@ package x360mediaserver.upnpmediaserver.mediareceiverregistrar;
 
 
 
-import java.io.PrintWriter;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-
 import org.cybergarage.upnp.Action;
-import org.cybergarage.upnp.UPnP;
 import org.cybergarage.xml.Node;
 
-import x360mediaserver.Config;
-import x360mediaserver.ConfigXML;
 import x360mediaserver.upnpmediaserver.upnp.MediaService;
 
 
@@ -63,20 +54,20 @@ public class MediaReceiverRegistrar extends MediaService {
 
     }
 	
-	public void doGet(HttpServletRequest req, HttpServletResponse resp)
-    {
-	    Config.out("MEDIA RECIEVER REGISTER HTTP GET");
-        try
-        {
-            PrintWriter writer = resp.getWriter();
-            writer.write(UPnP.XML_DECLARATION + "\n" );
-            writer.write(getSCPDNode().toString());
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-    }
+//	public void doGet(HttpServletRequest req, HttpServletResponse resp)
+//    {
+//	    Config.out("MEDIA RECIEVER REGISTER HTTP GET");
+//        try
+//        {
+//            PrintWriter writer = resp.getWriter();
+//            writer.write(UPnP.XML_DECLARATION + "\n" );
+//            writer.write(getSCPDNode().toString());
+//        }
+//        catch (Exception e)
+//        {
+//            e.printStackTrace();
+//        }
+//    }
 	
 
 	protected boolean doAction(Action action,String ServerAddress){
