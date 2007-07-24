@@ -151,6 +151,7 @@ public class HTTPMUSocket
         try
         {
             ssdpMultiSock.leaveGroup(ssdpMultiGroup, ssdpMultiIf);
+            ssdpMultiSock.close();
             ssdpMultiSock = null;
         }
         catch (Exception e)
