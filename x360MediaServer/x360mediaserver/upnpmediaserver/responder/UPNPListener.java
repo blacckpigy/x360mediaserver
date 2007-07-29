@@ -35,6 +35,8 @@ import org.cybergarage.xml.Node;
 import org.cybergarage.xml.XML;
 
 import x360mediaserver.Config;
+import x360mediaserver.upnpmediaserver.mediareceiverregistrar.MediaReceiverRegistrar;
+import x360mediaserver.upnpmediaserver.upnp.contentdirectory.ContentDirectory;
 
 public class UPNPListener extends MyDevice
 {
@@ -92,7 +94,7 @@ public class UPNPListener extends MyDevice
 	
 	public UPNPListener getDeviceByDescriptionURI(String uri)
     {
-        DeviceList devList = getDeviceList();
+	    MyDeviceList devList = getDeviceList();
         int devCnt = devList.size();
         for (int n=0; n<devCnt; n++) {
             UPNPListener dev = (UPNPListener) devList.getDevice(n);
@@ -545,8 +547,23 @@ public class UPNPListener extends MyDevice
             fileByte = embService.getSCPDData();
         }
         else {
-            httpReq.returnBadRequest();
-            return;
+            // We have to specify now the custom XBOX behavior.
+            if (uri.contains("ContentDirectory"))
+            {
+                Config.out("Sending to content dir");
+                fileByte = ((ContentDirectory) Config.getContentDirectory()).doGet(httpReq);
+                return;
+            }
+            else if (uri.contains("X_MS_MediaReceiverRegistrar"))
+            {
+                Config.out("Sending to media reciever");
+//                ((MediaReceiverRegistrar)Config.getMediaReceiverReg()).doPost(ctlReq);
+            }
+            else 
+            {
+                httpReq.returnBadRequest();
+                return;
+            }
         }
         
         HTTPResponse httpRes = new HTTPResponse();
@@ -656,13 +673,13 @@ public class UPNPListener extends MyDevice
             if (type.contains("ContentDirectory"))
             {
                 Config.out("Sending to content dir");
-                Config.getContentDirectory().doPost(ctlReq);
+                ((ContentDirectory) Config.getContentDirectory()).doPost(ctlReq);
             }
-//            else if (type.contains("X_MS_MediaReceiverRegistrar"))
-//            {
-//                Config.out("Sending to media reciever");
-//                Config.getMediaReceiverReg().doPost(ctlReq);
-//            }
+            else if (type.contains("X_MS_MediaReceiverRegistrar"))
+            {
+                Config.out("Sending to media reciever");
+                ((MediaReceiverRegistrar)Config.getMediaReceiverReg()).doPost(ctlReq);
+            }
             MyService realService = getService(type);
 //            realService.
             String actionName2 = "asds";

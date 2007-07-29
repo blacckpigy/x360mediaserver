@@ -1,5 +1,5 @@
 /**
- * one line to give the program's name and an idea of what it does. Copyright (C) 2006 Thomas Walker
+* one line to give the program's name and an idea of what it does. Copyright (C) 2006 Thomas Walker
  * This program is free software; you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation; either version 2 of the
  * License, or (at your option) any later version. This program is distributed in the hope that it
@@ -11,10 +11,19 @@
 
 package x360mediaserver.upnpmediaserver.upnp.contentdirectory;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 
+import org.cybergarage.http.HTTP;
+import org.cybergarage.http.HTTPRequest;
+import org.cybergarage.http.HTTPResponse;
+import org.cybergarage.http.HTTPStatus;
 import org.cybergarage.upnp.Action;
 import org.cybergarage.upnp.Argument;
+import org.cybergarage.upnp.control.ActionRequest;
 import org.cybergarage.upnp.media.server.action.BrowseAction;
 import org.cybergarage.upnp.media.server.action.SearchAction;
 import org.cybergarage.upnp.media.server.object.ContentNode;
@@ -24,8 +33,11 @@ import org.cybergarage.xml.Attribute;
 import org.cybergarage.xml.AttributeList;
 import org.cybergarage.xml.Node;
 
+import x360mediaserver.Config;
 import x360mediaserver.ConfigStream;
 import x360mediaserver.upnpmediaserver.upnp.MediaService;
+import x360mediaserver.upnpmediaserver.upnp.StreamingHttpResponse;
+import x360mediaserver.upnpmediaserver.upnp.cybergarage.NewActionResponse;
 
 public class ContentDirectory extends MediaService
 {
@@ -106,23 +118,23 @@ public class ContentDirectory extends MediaService
         return false;
     }
 
-//    public void doGet(HttpServletRequest req, HttpServletResponse resp)
-//    {
-//        Config.out("GETTING ContentDirectory");
-//        try
-//        {
-//            debug("CONTENT DIRECTORY HTTP GET");
-//            debug("Contextpath:" + req.getContextPath());
+    public byte[] doGet(HTTPRequest req)
+    {
+        Config.out("GETTING ContentDirectory");
+        try
+        {
+            debug("CONTENT DIRECTORY HTTP GET");
+            debug("Contextpath:" + req);
 //            debug("pathinfo:" + req.getPathInfo());
 //            debug("request uri:" + req.getRequestURI());
 //            debug("path translated:" + req.getPathTranslated());
 //            debug("Query string" + req.getQueryString());
-//            if (req.getPathInfo().contains("Music"))
-//            {
-//                System.out.println("Music Requested");
-//                playMusic(req, resp);
-//            }
-//            else if (req.getPathInfo().contains("Dump"))
+            if (req.getURI().contains("Music"))
+            {
+                System.out.println("Music Requested");
+                playMusic(req);
+            }
+//            else if (req.getURI().contains("Dump"))
 //            {
 //                // dump music
 //                PrintWriter writer = resp.getWriter();
@@ -141,12 +153,14 @@ public class ContentDirectory extends MediaService
 //                writer.write(UPnP.XML_DECLARATION + "\n");
 //                writer.write(getSCPDNode().toString());
 //            }
-//        }
-//        catch (Exception e)
-//        {
-//            e.printStackTrace();
-//        }
-//    }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return null;
+        
+    }
 
     public synchronized int getSystemUpdateID()
     {
@@ -313,28 +327,44 @@ public class ContentDirectory extends MediaService
     }
 
     // TODO: THIS IS HOW TO PLAY MUSIC!
-//    private void playMusic(HttpServletRequest req, HttpServletResponse resp)
-//    {
-//        String idString = req.getPathInfo().substring(req.getPathInfo().lastIndexOf("/") + 1);
-//
-//        idString = idString.substring(0, idString.indexOf("."));
-//        debug("idString:" + idString);
-//        try
-//        {
-//            BufferedOutputStream os = new BufferedOutputStream(resp.getOutputStream(), 10000);
+    private void playMusic(HTTPRequest req)
+    {
+        String idString = req.getURI().substring(req.getURI().lastIndexOf("/") + 1);
+
+        idString = idString.substring(0, idString.indexOf("."));
+        debug("idString:" + idString);
+        try
+        {
+            HTTPResponse httpRes = new HTTPResponse();
+         
+            PipedOutputStream os = new PipedOutputStream();
+            PipedInputStream is = new PipedInputStream(os);
+            
 //            if (req.getQueryString() != null &&
 //                req.getQueryString().toLowerCase().contains("format=pcm"))
 //            {
 //                resp.setContentType("audio/L16; rate=44100; channels=2");
 //                musicDB.playSongAsPCM(Integer.parseInt(idString), os);
 //            }
-//            else if (req.getPathInfo().substring(req.getPathInfo().lastIndexOf("/") + 1)
-//                        .toLowerCase().endsWith("mp3"))
-//            {
-//                System.out.println("Playing mp3");
-//                resp.setContentType("audio/mpeg");
-//                musicDB.playSongAsMP3(Integer.parseInt(idString), os);
-//            }
+            if (req.getURI().substring(req.getURI().lastIndexOf("/") + 1)
+                        .toLowerCase().endsWith("mp3"))
+            {
+                System.out.println("Playing mp3");
+                httpRes.setContentType("audio/mpeg");
+                httpRes.setStatusCode(HTTPStatus.OK);
+                httpRes.setContentLength(10000000);
+                httpRes.setContentInputStream(is);
+                
+                musicDB.playSongAsMP3(Integer.parseInt(idString), os);
+                
+                
+                
+                
+
+                req.post(httpRes);
+                
+                
+            }
 //            else if (req.getPathInfo().substring(req.getPathInfo().lastIndexOf("/") + 1)
 //                        .toLowerCase().endsWith("wma"))
 //            {
@@ -351,14 +381,14 @@ public class ContentDirectory extends MediaService
 //                // resp.setContentLength(Integer.MAX_VALUE);
 //                musicDB.playVideoAsWMV(Integer.parseInt(idString), os);
 //            }
-//            os.flush();
-//            os.close();
-//        }
-//        catch (Exception e)
-//        {
-//            e.printStackTrace();
-//        }
-//    }
+           // os.flush();
+            os.close();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
 
     private boolean searchActionReceived(SearchAction action, String ServerAddress)
     {
@@ -402,6 +432,47 @@ public class ContentDirectory extends MediaService
         return true;
     }
 
+    public void doPost(ActionRequest req)
+    {
+
+        Config.out("CD : DOING THE SOAP ACTION!");
+        try
+        {
+//            if (req.getHeader("SOAPACTION") != null)
+//            { // check it is a upnp action
+//                HTTPServletRequestWrapper actionwrapper = new HTTPServletRequestWrapper(req);
+//                ActionRequest actrequest = actionwrapper.getActionRequest();
+                Action action = getActionFromRequest(req);
+
+                if (doAction(action, req.getLocalAddress() + ":" + req.getLocalPort()))
+                {
+                    HTTPResponse resp = new HTTPResponse();
+                    resp.setContentType("text/xml");
+                    // if the action has been successfully done
+                    debug("action done, setting response");
+                    NewActionResponse actresponse = new NewActionResponse();
+                    debug("action done, response created");
+                    actresponse.setResponse(action, getSERVICE_STRING());
+                    debug("actresponse set");
+
+                    resp.setStatusCode(HTTPStatus.OK);
+                    resp.setContentLength((int) actresponse.getContentLength());
+                    resp.setContent(actresponse.getContent());
+                    req.post(resp);
+                }
+//            }
+//            else
+//            {
+//                handleOtherPost(req, resp);
+//            }
+
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+    
     public synchronized void updateSystemUpdateID()
     {
         systemUpdateID++ ;
