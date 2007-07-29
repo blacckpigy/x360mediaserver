@@ -149,6 +149,12 @@ public class Stream extends Media {
 		//playStream(os);
 	}
 	
+	@Override
+    public long getSize()
+    {
+        return Long.MAX_VALUE;
+    }
+	
 //	private void playStream(OutputStream os){
 //		try{
 //			System.out.println("Opening stream:"+url.toString());

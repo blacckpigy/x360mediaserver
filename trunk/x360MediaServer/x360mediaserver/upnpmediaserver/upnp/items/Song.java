@@ -179,5 +179,11 @@ public class Song extends Media{
 	public void setFileItem(FileItem fileItem) {
 		this.fileItem = fileItem;
 	}
+
+    @Override
+    public long getSize()
+    {
+        return fileItem.getFile().length();
+    }
 	
 }

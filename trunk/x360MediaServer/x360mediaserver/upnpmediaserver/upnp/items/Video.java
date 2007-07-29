@@ -156,4 +156,9 @@ public class Video extends Media{
 		this.fileItem = fileItem;
 	}
 	
+	@Override
+    public long getSize()
+    {
+        return fileItem.getFile().getUsableSpace();
+    }
 }

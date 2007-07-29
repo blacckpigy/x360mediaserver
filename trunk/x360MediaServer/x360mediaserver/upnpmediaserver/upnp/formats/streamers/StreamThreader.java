@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.OutputStream;
+import java.io.PipedOutputStream;
 
 public class StreamThreader implements Runnable
 {
@@ -11,6 +12,7 @@ public class StreamThreader implements Runnable
     private Thread thread = null;
     private final File file;
     private final OutputStream os;
+    private BufferedInputStream is = null;
 
     public StreamThreader(File file, OutputStream os)
     {
@@ -18,41 +20,35 @@ public class StreamThreader implements Runnable
         this.os = os;
     }
     
-    /** Copies a given file to the OutputStream
+    /**
+     * Copies a given file to the OutputStream (which in my case, is a PipedOutputStream)
+     * 
      * @param file
      * @param os
      */
-    public void writeToStream(){
-        BufferedInputStream is=null;
-        try{                
-            is=new BufferedInputStream(new FileInputStream(file));
-            byte input[]=new byte[4096];
+    public void writeToStream()
+    {
+        try
+        {
+            is = new BufferedInputStream(new FileInputStream(file));
+            byte input[] = new byte[4096];
             int bytesread;
-            while((bytesread=is.read(input))!=-1){
-                
-                os.write(input,0,bytesread);
-            }
-            
-            
+            while ((bytesread = is.read(input)) != -1)
+                os.write(input, 0, bytesread);
         }
-        catch(Exception e){
-            System.out.println(e.toString());
+        catch (Exception e)
+        {
+            if (!e.getMessage().equals("Pipe closed"))
+                System.err.println("StreamThreader error: " + e.toString());
         }
         finally
         {
-            if(is!=null) 
-                try{
-                    is.close();
-                    stop();
-                }
-            catch(Exception e){
-                
-            }
+            stop();
         }
     }
     
     /**
-     * Start the network data collecting agent.
+     * Start the file reader.
      */
     public synchronized void start()
     {
@@ -62,16 +58,26 @@ public class StreamThreader implements Runnable
     }
 
     /**
-     * Stop the network data collecting agent.
+     * Stop the file reader.
      */
     public void stop()
     {
+        if (is != null)
+            try
+            {
+                is.close();
+                is = null;
+            }
+            catch (Exception e)
+            {
+            }
+        
         if (thread != null)
             thread = null;
     }
 
     /**
-     * This is the run method and runs if/when we connect to the server
+     * This is the run method and runs when we start playing a file.
      */
     public void run()
     {
@@ -88,5 +94,4 @@ public class StreamThreader implements Runnable
             stop();
         }
     }
-
 }

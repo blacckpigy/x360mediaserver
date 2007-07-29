@@ -118,7 +118,7 @@ public class ContentDirectory extends MediaService
         return false;
     }
 
-    public byte[] doGet(HTTPRequest req)
+    public void doGet(HTTPRequest req)
     {
         Config.out("GETTING ContentDirectory");
         try
@@ -158,8 +158,6 @@ public class ContentDirectory extends MediaService
         {
             e.printStackTrace();
         }
-        return null;
-        
     }
 
     public synchronized int getSystemUpdateID()
@@ -352,12 +350,9 @@ public class ContentDirectory extends MediaService
                 System.out.println("Playing mp3");
                 httpRes.setContentType("audio/mpeg");
                 httpRes.setStatusCode(HTTPStatus.OK);
-                httpRes.setContentLength(10000000);
+                httpRes.setContentLength(musicDB.getFileSize(Integer.parseInt(idString))-1); // this is how long each song is.
                 httpRes.setContentInputStream(is);
-                
                 musicDB.playSongAsMP3(Integer.parseInt(idString), os);
-                
-                
                 
                 
 
@@ -386,6 +381,7 @@ public class ContentDirectory extends MediaService
         }
         catch (Exception e)
         {
+            System.err.print("MUSIC PLAYER");
             e.printStackTrace();
         }
     }

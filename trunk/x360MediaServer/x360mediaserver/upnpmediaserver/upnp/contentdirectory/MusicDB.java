@@ -625,4 +625,8 @@ public class MusicDB
         formatHandler.setUsePCM(option);
     }
 
+    public long getFileSize(int id)
+    {
+        return mediaMap.get(id).getSize();
+    }
 }
