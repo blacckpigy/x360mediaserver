@@ -19,9 +19,11 @@
 
 package x360mediaserver.upnpmediaserver.upnp.contentdirectory;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PipedOutputStream;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.TreeMap;
@@ -120,16 +122,7 @@ public class MusicDB
 
         try
         {
-            if (System.getProperty("os.name").toLowerCase().contains("windows"))
-            {
-                formatHandler.setScriptDir(new File((new File(".").getCanonicalPath()) +
-                                                    "\\ScriptDir"));
-            }
-            else
-            {
-                formatHandler.setScriptDir(new File((new File(".").getCanonicalPath()) +
-                                                    "/ScriptDir"));
-            }
+            formatHandler.setScriptDir(new File((new File(".").getCanonicalPath()) + File.separatorChar + "ScriptDir"));
         }
         catch (IOException e)
         {

@@ -31,40 +31,9 @@ import java.io.OutputStream;
  */
 public class Native implements Streamer {
 	
-	/** Copies a given file to the OutputStream
-	 * @param file
-	 * @param os
-	 */
-	public void writeToStream(File file,OutputStream os){
-		BufferedInputStream is=null;
-		try{				
-			is=new BufferedInputStream(new FileInputStream(file));
-			byte input[]=new byte[4096];
-			int bytesread;
-			while((bytesread=is.read(input))!=-1){
-				
-				os.write(input,0,bytesread);
-			}
-			
-			
-		}
-		catch(Exception e){
-			System.out.println(e.toString());
-		}
-		finally
-		{
-			if(is!=null) 
-				try{
-					is.close();
-				}
-			catch(Exception e){
-				
-			}
-		}
-	}
 	
 	public void writeMP3toStream(File file,OutputStream os){
-		writeToStream(file,os);
+	    writeToStream(file,os);
 	}
 	
 	public void writePCMtoStream(File file,OutputStream os){		
@@ -74,5 +43,11 @@ public class Native implements Streamer {
 	public void writeWMAtoStream(File file,OutputStream os){
 		writeToStream(file,os);
 	}
+
+    public void writeToStream(File file, OutputStream os)
+    {
+        StreamThreader thread = new StreamThreader(file, os);
+        thread.start();
+    }
 
 }

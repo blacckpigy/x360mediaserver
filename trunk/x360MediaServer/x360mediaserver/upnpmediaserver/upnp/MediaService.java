@@ -40,6 +40,14 @@ public abstract class MediaService extends UPNPListener
 
     protected HashMap<String, Action> actionmap;
 
+    /**
+     * @return the sERVICE_STRING
+     */
+    public String getSERVICE_STRING()
+    {
+        return SERVICE_STRING;
+    }
+
     public MediaService()
     {
         super();
@@ -109,47 +117,9 @@ public abstract class MediaService extends UPNPListener
 
         return action;
     }
-
-    public void doPost(ActionRequest req)
-    {
-
-        Config.out("DOING THE SOAP ACTION!");
-        try
-        {
-            if (req.getHeader("SOAPACTION") != null)
-            { // check it is a upnp action
-//                HTTPServletRequestWrapper actionwrapper = new HTTPServletRequestWrapper(req);
-//                ActionRequest actrequest = actionwrapper.getActionRequest();
-                Action action = getActionFromRequest(req);
-
-                if (doAction(action, req.getLocalAddress() + ":" + req.getLocalPort()))
-                {
-                    HTTPResponse resp = new HTTPResponse();
-                    resp.setContentType("text/xml");
-                    // if the action has been successfully done
-                    debug("action done, setting response");
-                    NewActionResponse actresponse = new NewActionResponse();
-                    debug("action done, response created");
-                    actresponse.setResponse(action, SERVICE_STRING);
-                    debug("actresponse set");
-
-                    resp.setStatusCode(HTTPStatus.OK);
-                    resp.setContentLength((int) actresponse.getContentLength());
-                    resp.setContent(actresponse.getContent());
-                    req.post(resp);
-                }
-            }
-//            else
-//            {
-//                handleOtherPost(req, resp);
-//            }
-
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-    }
+    
+    public abstract void doPost(ActionRequest req);
+    
 
 //    protected void handleOtherPost(HttpServletRequest req, HttpServletResponse resp)
 //    {
@@ -190,7 +160,7 @@ public abstract class MediaService extends UPNPListener
         ssdpRes.setUSN(usn);
         ssdpRes.setLocation(rootDevLocation);
         // Thanks for Brent Hills (10/20/04)
-        ssdpRes.setMYNAME("YOHOHO");
+//        ssdpRes.setMYNAME("YOHOHO");
 
         int mx = ssdpPacket.getMX();
         TimerUtil.waitRandom(mx * 1000);

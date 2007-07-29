@@ -23,10 +23,15 @@ package x360mediaserver.upnpmediaserver.mediareceiverregistrar;
 
 
 
+import org.cybergarage.http.HTTPResponse;
+import org.cybergarage.http.HTTPStatus;
 import org.cybergarage.upnp.Action;
+import org.cybergarage.upnp.control.ActionRequest;
 import org.cybergarage.xml.Node;
 
+import x360mediaserver.Config;
 import x360mediaserver.upnpmediaserver.upnp.MediaService;
+import x360mediaserver.upnpmediaserver.upnp.cybergarage.NewActionResponse;
 
 
 
@@ -96,6 +101,47 @@ public class MediaReceiverRegistrar extends MediaService {
 		return true;
 	}
 
+	 public void doPost(ActionRequest req)
+	    {
+
+	        Config.out("DOING THE SOAP ACTION!");
+	        try
+	        {
+//	            if (req.getHeader("SOAPACTION") != null)
+//	            { // check it is a upnp action
+//	                HTTPServletRequestWrapper actionwrapper = new HTTPServletRequestWrapper(req);
+//	                ActionRequest actrequest = actionwrapper.getActionRequest();
+	                Action action = getActionFromRequest(req);
+
+	                if (doAction(action, req.getLocalAddress() + ":" + req.getLocalPort()))
+	                {
+	                    HTTPResponse resp = new HTTPResponse();
+	                    resp.setContentType("text/xml");
+	                    // if the action has been successfully done
+	                    debug("action done, setting response");
+	                    NewActionResponse actresponse = new NewActionResponse();
+	                    debug("action done, response created");
+	                    actresponse.setResponse(action, getSERVICE_STRING());
+	                    debug("actresponse set");
+
+	                    resp.setStatusCode(HTTPStatus.OK);
+	                    resp.setContentLength((int) actresponse.getContentLength());
+	                    resp.setContent(actresponse.getContent());
+	                    req.post(resp);
+	                }
+//	            }
+//	            else
+//	            {
+//	                handleOtherPost(req, resp);
+//	            }
+
+	        }
+	        catch (Exception e)
+	        {
+	            e.printStackTrace();
+	        }
+	    }
+	
 	protected void debug(String str){
 	    System.err.println("MEDIARECVREG : " + str);
 //		try{
