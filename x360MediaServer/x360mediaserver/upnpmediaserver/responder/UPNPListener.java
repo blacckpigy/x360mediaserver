@@ -9,7 +9,6 @@ import org.cybergarage.soap.SOAPResponse;
 import org.cybergarage.upnp.Action;
 import org.cybergarage.upnp.ActionList;
 import org.cybergarage.upnp.ArgumentList;
-import org.cybergarage.upnp.DeviceList;
 import org.cybergarage.upnp.StateVariable;
 import org.cybergarage.upnp.UPnP;
 import org.cybergarage.upnp.UPnPStatus;
@@ -551,7 +550,7 @@ public class UPNPListener extends MyDevice
             if (uri.contains("ContentDirectory"))
             {
                 Config.out("Sending to content dir");
-                fileByte = ((ContentDirectory) Config.getContentDirectory()).doGet(httpReq);
+                ((ContentDirectory) Config.getContentDirectory()).doGet(httpReq);
                 return;
             }
             else if (uri.contains("X_MS_MediaReceiverRegistrar"))
@@ -566,6 +565,7 @@ public class UPNPListener extends MyDevice
             }
         }
         
+        // TODO: only get here if we don't do XBOX stuff.. xbox stuff should be better done. 
         HTTPResponse httpRes = new HTTPResponse();
         if (FileUtil.isXMLFileName(uri) == true)
             httpRes.setContentType(XML.CONTENT_TYPE);

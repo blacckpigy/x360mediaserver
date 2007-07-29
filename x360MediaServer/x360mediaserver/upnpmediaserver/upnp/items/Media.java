@@ -49,6 +49,8 @@ public abstract class Media {
 	
 	public abstract void playWMA(OutputStream os);
 	
-	//public abstract void playWMV(OutputStream os);
+//	public abstract void playWMV(OutputStream os);
+	
+	public abstract long getSize();
 	
 }
